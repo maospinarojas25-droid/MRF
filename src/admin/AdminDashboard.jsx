@@ -42,6 +42,7 @@ function AdminDashboard() {
   const [guardandoAjustes, setGuardandoAjustes] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
+  const [versionVista, setVersionVista] = useState(0)
   const consultaNormalizada = busquedaProductos.trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   const productosFiltrados = productos.filter((producto) => {
     const coincideTipo = filtroTipoProductos === 'Todos' || producto.tipo === filtroTipoProductos
@@ -130,6 +131,7 @@ function AdminDashboard() {
       let imagePath = formulario._imagePath
       if (archivo) imagePath = await cargarImagen(archivo)
       await guardarProducto({ ...formulario, _imagePath: imagePath })
+      setVersionVista((version) => version + 1)
       setMensaje(formulario.id ? 'Cambios guardados.' : 'Producto agregado al catálogo.')
       setFormulario(productoVacio)
       setArchivo(null)
@@ -162,6 +164,7 @@ function AdminDashboard() {
     setMensaje('')
     try {
       await guardarAjustes(ajustes)
+      setVersionVista((version) => version + 1)
       setMensaje('Cambios guardados para el catálogo público.')
     } catch {
       setError('No se pudieron guardar las opciones del catálogo.')
@@ -184,6 +187,15 @@ function AdminDashboard() {
           <button type="button" className="admin-salir" onClick={cerrarSesion}>Cerrar sesión</button>
         </div>
       </header>
+
+      <aside className="admin-vista-simultanea" aria-label="Vista previa de la tienda">
+        <div className="admin-vista-simultanea-barra">
+          <div><p className="admin-etiqueta">VISTA PÚBLICA</p><h2>Así se ve tu página</h2></div>
+          <button type="button" className="admin-boton-principal admin-boton-compacto" onClick={() => setVersionVista((version) => version + 1)}>Actualizar</button>
+        </div>
+        <iframe key={versionVista} src="/" title="Vista previa de la página pública de MRF" />
+        <p className="admin-vista-simultanea-ayuda">Al guardar cambios, la vista se actualizará. También puedes pulsar “Actualizar”.</p>
+      </aside>
 
       <section className="admin-cabecera">
         <p className="admin-etiqueta">PANEL PRIVADO · SOLO EQUIPO MRF</p>
