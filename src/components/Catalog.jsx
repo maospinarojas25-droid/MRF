@@ -346,24 +346,26 @@ function Catalog() {
               type="search"
               value={busqueda}
               onChange={(evento) => setBusqueda(evento.target.value)}
-              placeholder="Buscar gorra, accesorio o equipo"
-              aria-label="Buscar gorras por nombre o equipo"
+              placeholder={modoVista === 'accesorios' ? 'Búsqueda' : 'Buscar gorra, accesorio o equipo'}
+              aria-label={modoVista === 'accesorios' ? 'Búsqueda de accesorios' : 'Buscar gorras por nombre o equipo'}
             />
             {modoVista !== 'accesorios' && (
-              <select value={estiloViseraElegido} onChange={(evento) => setEstiloViseraElegido(evento.target.value)} aria-label="Filtrar por tipo de visera">
-                <option value="">Todas las viseras</option>
-                <option value="Plana">Visera plana</option>
-                <option value="Curva">Visera curva</option>
-              </select>
+              <>
+                <select value={estiloViseraElegido} onChange={(evento) => setEstiloViseraElegido(evento.target.value)} aria-label="Filtrar por tipo de visera">
+                  <option value="">Todas las viseras</option>
+                  <option value="Plana">Visera plana</option>
+                  <option value="Curva">Visera curva</option>
+                </select>
+                <select value={colorElegido} onChange={(evento) => setColorElegido(evento.target.value)} aria-label="Filtrar por color">
+                  <option value="">Todos los colores</option>
+                  {colores.map((color) => <option key={color} value={color}>{color}</option>)}
+                </select>
+                <select value={tallaElegida} onChange={(evento) => setTallaElegida(evento.target.value)} aria-label="Filtrar por talla">
+                  <option value="">Todas las tallas</option>
+                  {tallas.map((talla) => <option key={talla} value={talla}>{talla}</option>)}
+                </select>
+              </>
             )}
-            <select value={colorElegido} onChange={(evento) => setColorElegido(evento.target.value)} aria-label="Filtrar por color">
-              <option value="">Todos los colores</option>
-              {colores.map((color) => <option key={color} value={color}>{color}</option>)}
-            </select>
-            <select value={tallaElegida} onChange={(evento) => setTallaElegida(evento.target.value)} aria-label="Filtrar por talla">
-              <option value="">Todas las tallas</option>
-              {tallas.map((talla) => <option key={talla} value={talla}>{talla}</option>)}
-            </select>
             <button className="limpiar-filtros" type="button" onClick={limpiarFiltros}>Limpiar filtros</button>
           </div>
 

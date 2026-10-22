@@ -179,6 +179,7 @@ function AdminDashboard() {
       <header className="admin-barra">
         <Link className="admin-marca" to="/">MRF <span>ADMINISTRACIÓN</span></Link>
         <div className="admin-barra-acciones">
+          <Link to="/admin/vista-previa" target="_blank" rel="noreferrer" className="admin-boton-vista-previa">Vista previa ↗</Link>
           <Link to="/gorras" className="admin-ver-catalogo">Ver catálogo ↗</Link>
           <button type="button" className="admin-salir" onClick={cerrarSesion}>Cerrar sesión</button>
         </div>

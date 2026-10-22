@@ -34,10 +34,18 @@ function ProductCard({ producto }) {
       </div>
 
       <div className="producto-contacto">
-        <WhatsAppButton producto={producto} />
-        <a className="producto-instagram" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
-          Síguenos en Instagram <span aria-hidden="true">↗</span>
-        </a>
+        {producto.categoria === 'Accesorio' ? (
+          <a className="producto-whatsapp" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
+            Consultar por Instagram <span aria-hidden="true">↗</span>
+          </a>
+        ) : (
+          <>
+            <WhatsAppButton producto={producto} />
+            <a className="producto-instagram" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
+              Síguenos en Instagram <span aria-hidden="true">↗</span>
+            </a>
+          </>
+        )}
       </div>
     </article>
   )

@@ -19,6 +19,8 @@
 .admin-boton-compacto { white-space:nowrap; }
 .admin-login-nota { margin:18px 0 0; color:#89857d; font-size:11px; line-height:1.5; }
 .admin-panel { padding-bottom:45px; }
+.admin-boton-vista-previa { color:#f4f0e8; text-decoration:none; border:1px solid #f26b38; padding:10px 14px; font-size:11px; font-weight:700; white-space:nowrap; transition:background .2s,color .2s; }
+.admin-boton-vista-previa:hover { background:#f26b38; color:#171715; }
 .admin-barra { min-height:72px; padding:0 6%; display:flex; align-items:center; justify-content:space-between; gap:18px; border-bottom:1px solid #373631; }
 .admin-marca { color:#f4f0e8; font-size:22px; font-weight:800; text-decoration:none; }
 .admin-marca span { margin-left:10px; color:#a7a197; font-size:9px; font-weight:500; letter-spacing:.15em; }

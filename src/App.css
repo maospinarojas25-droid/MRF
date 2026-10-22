@@ -2151,8 +2151,10 @@ body { font-size:16px; }
 .estado-filtro:disabled { opacity:.62; cursor:not-allowed; }
 
 /* Branded public maintenance view */
-.pantalla-mantenimiento,.mantenimiento-cargando { min-height:100vh; background:#171715; color:#f4f0e8; display:grid; place-items:center; padding:28px; }
-.mantenimiento-marco { width:min(650px,100%); min-height:min(720px,calc(100vh - 56px)); padding:clamp(32px,8vw,72px); border:1px solid #45433e; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; position:relative; overflow:hidden; background:radial-gradient(ellipse at 80% 15%,#292720 0,transparent 45%); }
+.pantalla-mantenimiento,.mantenimiento-cargando { min-height:100vh; background:#090909; color:#f4f0e8; display:grid; place-items:center; padding:28px; }
+.pantalla-mantenimiento { position:relative; isolation:isolate; overflow:hidden; }
+.pantalla-mantenimiento:before { content:""; position:fixed; z-index:-1; inset:-8%; background:linear-gradient(90deg,#080808b8,#08080870 48%,#080808b8),linear-gradient(0deg,#080808a8,#08080855),url('/mrf-logo.jpg') center 48%/cover no-repeat; filter:brightness(.72) saturate(.72); transform:scale(1.04); }
+.mantenimiento-marco { width:min(650px,100%); min-height:min(720px,calc(100vh - 56px)); padding:clamp(32px,8vw,72px); border:1px solid #77736a70; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; position:relative; overflow:hidden; background:linear-gradient(145deg,#1b1a18e8,#111110ed 72%); box-shadow:0 24px 100px #0008; backdrop-filter:blur(3px); }
 .mantenimiento-marco:before { content:""; position:absolute; width:240px; height:240px; right:-105px; bottom:-115px; border:1px solid #f26b3840; border-radius:50%; box-shadow:0 0 0 24px #f26b3810,0 0 0 48px #f26b3808; }
 .mantenimiento-etiqueta { margin:0 0 28px; color:#f26b38; font-size:10px; font-weight:700; letter-spacing:.2em; }
 .mantenimiento-logo { width:min(220px,70%); height:130px; object-fit:contain; object-position:left center; margin:0 0 22px; }
@@ -2163,4 +2165,9 @@ body { font-size:16px; }
 .mantenimiento-pie { color:#89857d; font-size:9px; letter-spacing:.16em; }
 .mantenimiento-cargando { min-height:100vh; }
 .mantenimiento-cargando span { color:#f26b38; font-weight:800; font-size:28px; letter-spacing:.2em; }
-@media(max-width:560px) { .pantalla-mantenimiento { padding:16px; } .mantenimiento-marco { min-height:calc(100vh - 32px); padding:34px 26px; } .mantenimiento-marco h1 { font-size:46px; } .mantenimiento-descripcion { font-size:14px; } }
+.mrf-vista-previa-aviso { position:sticky; top:0; z-index:1000; min-height:44px; padding:9px 5%; display:flex; align-items:center; justify-content:center; gap:22px; background:#171715; color:#f4f0e8; border-bottom:2px solid #f26b38; font-size:12px; text-align:center; }
+.mrf-vista-previa-aviso strong { color:#f26b38; letter-spacing:.12em; }
+.mrf-vista-previa-aviso a { color:#fff; font-weight:700; text-decoration:none; white-space:nowrap; }
+.mrf-vista-previa-aviso a:hover { text-decoration:underline; }
+@media(max-width:560px) { .pantalla-mantenimiento { padding:16px; } .pantalla-mantenimiento:before { inset:-4%; background-position:center; } .mantenimiento-marco { min-height:calc(100vh - 32px); padding:34px 26px; } .mantenimiento-marco h1 { font-size:46px; } .mantenimiento-descripcion { font-size:14px; } }
+@media(max-width:560px) { .mrf-vista-previa-aviso { padding:8px 12px; gap:8px; font-size:10px; } }
