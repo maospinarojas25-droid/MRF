@@ -15,6 +15,7 @@ function AdminLogin() {
     evento.preventDefault()
     setCargando(true)
     setError('')
+    const ventanaTienda = window.open('about:blank', '_blank')
 
     const { data, error: errorLogin } = await supabase.auth.signInWithPassword({
       email: correo.trim(),
@@ -22,6 +23,7 @@ function AdminLogin() {
     })
 
     if (errorLogin) {
+      ventanaTienda?.close()
       setError('No pudimos iniciar sesión. Revisa tu correo y contraseña.')
       setCargando(false)
       return
@@ -30,12 +32,18 @@ function AdminLogin() {
     try {
       const autorizado = await comprobarAdmin(data.user.id)
       if (!autorizado) {
+        ventanaTienda?.close()
         await supabase.auth.signOut()
         setError('Esta cuenta todavía no tiene permiso de administración.')
       } else {
+        if (ventanaTienda) {
+          ventanaTienda.location.replace('/')
+          ventanaTienda.focus()
+        }
         navigate('/admin', { replace: true })
       }
     } catch {
+      ventanaTienda?.close()
       await supabase.auth.signOut()
       setError('No se pudo validar el acceso. Revisa la configuración inicial de Supabase.')
     }
@@ -59,7 +67,7 @@ function AdminLogin() {
             {cargando ? 'Verificando…' : 'Entrar al administrador'}
           </button>
         </form>
-        <p className="admin-login-nota">El acceso se crea y autoriza desde Supabase. No hay registro público.</p>
+        <p className="admin-login-nota">Al entrar, se abrirá la tienda en otra pestaña para que puedas revisar los cambios.</p>
       </section>
     </main>
   )
