@@ -2171,3 +2171,76 @@ body { font-size:16px; }
 .mrf-vista-previa-aviso a:hover { text-decoration:underline; }
 @media(max-width:560px) { .pantalla-mantenimiento { padding:16px; } .pantalla-mantenimiento:before { inset:-4%; background-position:center; } .mantenimiento-marco { min-height:calc(100vh - 32px); padding:34px 26px; } .mantenimiento-marco h1 { font-size:46px; } .mantenimiento-descripcion { font-size:14px; } }
 @media(max-width:560px) { .mrf-vista-previa-aviso { padding:8px 12px; gap:8px; font-size:10px; } }
+
+
+/* Portada más limpia y proporcionada en pantallas de escritorio */
+@media (min-width: 1025px) {
+  :root {
+    --alto-encabezado: 68px;
+    --margen: max(5vw, calc((100vw - 1320px) / 2));
+  }
+
+  .barra-anuncio {
+    min-height: 30px;
+    padding: 4px 14px;
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: .1em;
+  }
+
+  .encabezado {
+    gap: clamp(22px, 3vw, 48px);
+  }
+
+  .logo-imagen {
+    width: 50px;
+    height: 50px;
+  }
+
+  .menu {
+    gap: clamp(24px, 3vw, 48px);
+  }
+
+  .portada {
+    height: min(76svh, 740px);
+    min-height: 520px;
+    max-height: 740px;
+  }
+
+  .portada-texto {
+    width: min(46%, 620px);
+    padding: 40px 3.5% 56px var(--margen);
+  }
+
+  .etiqueta {
+    margin-bottom: 16px;
+  }
+
+  .portada h1 {
+    font-size: clamp(58px, 6.3vw, 94px);
+    line-height: .93;
+    letter-spacing: -.075em;
+    overflow-wrap: normal;
+  }
+
+  .descripcion {
+    max-width: 360px;
+    margin: 20px 0 24px;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .boton {
+    width: 190px;
+    min-width: 190px;
+    padding: 14px 16px;
+  }
+
+  .referencia {
+    top: 22px;
+  }
+
+  .portada-controles {
+    bottom: 32px;
+  }
+}
