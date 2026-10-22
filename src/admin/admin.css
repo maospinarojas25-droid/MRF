@@ -164,3 +164,49 @@
 
 .admin-switch-mantenimiento { border-color:#754333; background:#291e19; }
 
+
+/* Vista simultánea del panel y la tienda pública. */
+.admin-vista-simultanea {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #45433e;
+  border-radius: 10px;
+  background: #201f1c;
+}
+.admin-vista-simultanea-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.admin-vista-simultanea-barra .admin-etiqueta { margin-bottom: 5px; }
+.admin-vista-simultanea-barra h2 { margin: 0; color: #f4f0e8; font-size: 17px; }
+.admin-vista-simultanea-barra .admin-boton-principal { min-height: 36px; }
+.admin-vista-simultanea iframe {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  border: 1px solid #45433e;
+  background: #f0ede6;
+}
+.admin-vista-simultanea-ayuda { margin: 0; color: #a7a197; font-size: 10px; line-height: 1.5; }
+@media (min-width: 1100px) {
+  .admin-panel { padding-right: clamp(400px, 40vw, 620px); }
+  .admin-vista-simultanea {
+    position: fixed;
+    z-index: 5;
+    top: 88px;
+    right: 20px;
+    width: clamp(370px, 37vw, 580px);
+    height: calc(100vh - 104px);
+  }
+}
+@media (max-width: 1099px) {
+  .admin-vista-simultanea { width: min(1100px, 84%); height: 52vh; min-height: 360px; margin: 14px auto 0; }
+}
+@media (max-width: 580px) {
+  .admin-vista-simultanea { width: calc(100% - 28px); height: 46vh; min-height: 300px; padding: 12px; }
+}
