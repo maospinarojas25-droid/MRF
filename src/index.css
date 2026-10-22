@@ -27,3 +27,8 @@ body {
 a {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Mantiene las flechas decorativas como símbolos tipográficos, no emojis. */
+span[aria-hidden="true"] {
+  font-variant-emoji: text;
+}
