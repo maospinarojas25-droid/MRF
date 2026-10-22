@@ -37,7 +37,7 @@ function AdminLogin() {
         setError('Esta cuenta todavía no tiene permiso de administración.')
       } else {
         if (ventanaTienda) {
-          ventanaTienda.location.replace('/')
+          ventanaTienda.location.replace('/admin/vista-previa')
           ventanaTienda.focus()
         }
         navigate('/admin', { replace: true })
