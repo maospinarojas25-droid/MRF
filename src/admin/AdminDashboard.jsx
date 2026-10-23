@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { supabase } from '../supabase'
 import {
@@ -36,6 +36,7 @@ function AdminDashboard() {
   const [ajustes, setAjustes] = useState(ajustesIniciales)
   const [formulario, setFormulario] = useState(productoVacio)
   const [archivo, setArchivo] = useState(null)
+  const inputImagenRef = useRef(null)
   const [vistaImagen, setVistaImagen] = useState('')
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
@@ -120,6 +121,13 @@ function AdminDashboard() {
     setError('')
     setArchivo(file)
     setVistaImagen(URL.createObjectURL(file))
+  }
+
+  function quitarImagenSeleccionada() {
+    setArchivo(null)
+    setVistaImagen(formulario.imagen || '')
+    setError('')
+    if (inputImagenRef.current) inputImagenRef.current.value = ''
   }
 
   async function enviarProducto(evento) {
@@ -276,8 +284,9 @@ function AdminDashboard() {
               <p className="admin-ayuda admin-talla-no-aplica">{formulario.categoria === 'Accesorio' ? 'Los accesorios por encargo no requieren talla.' : 'Las gorras bajo encargo no llevan talla ni control de stock.'}</p>
             )}
           </div>
-          <label className="admin-subir-imagen">Foto de la gorra<input type="file" accept="image/jpeg,image/png,image/webp" onChange={seleccionarImagen} /><small>JPG, PNG o WebP · máximo 5 MB</small></label>
-          {vistaImagen && <div className="admin-vista-previa"><img src={vistaImagen} alt="Vista previa de la gorra" /></div>}
+          <label className="admin-subir-imagen">Foto de la gorra<input ref={inputImagenRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={seleccionarImagen} /><small>JPG, PNG o WebP · máximo 5 MB</small></label>
+          {archivo && <button className="admin-quitar-imagen" type="button" onClick={quitarImagenSeleccionada}><span aria-hidden="true">×</span> Quitar archivo seleccionado</button>}
+          {vistaImagen && <div className="admin-vista-previa"><img src={vistaImagen} alt="Vista previa de la gorra" /></div>} 
           <label className="admin-check"><input name="publicado" type="checkbox" checked={formulario.publicado} onChange={cambiarCampo} /><span>Mostrar este producto en el catálogo público</span></label>
           <div className="admin-botones-formulario">
             <button className="admin-boton-principal" type="submit" disabled={guardando}>{guardando ? 'Guardando…' : formulario.id ? 'Guardar cambios' : 'Agregar producto'}</button>
