@@ -15,7 +15,7 @@ function ProductCard({ producto }) {
           ) : (
             <span>FOTO DE GORRA<br />PENDIENTE</span>
           )}
-          <span className={producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'producto-etiqueta producto-etiqueta-stock' : 'producto-etiqueta producto-etiqueta-agotada') : 'producto-etiqueta'}>{producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : 'Bajo encargo'}</span>
+          <span className={producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'producto-etiqueta producto-etiqueta-stock' : 'producto-etiqueta producto-etiqueta-agotada') : 'producto-etiqueta'}>{producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : 'Catálogo'}</span>
         </div>
       </Link>
 
@@ -29,20 +29,20 @@ function ProductCard({ producto }) {
         </div>
         {producto.descripcion && <p className="producto-descripcion">{producto.descripcion}</p>}
         <Link className="producto-ver-detalles" to={'/producto/' + producto.id}>
-          Ver detalles ↗
+          Ver detalles ↗︎
         </Link>
       </div>
 
       <div className="producto-contacto">
         {producto.categoria === 'Accesorio' ? (
           <a className="producto-whatsapp" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
-            Consultar por Instagram <span aria-hidden="true">↗</span>
+            Consultar por Instagram <span aria-hidden="true">↗︎</span>
           </a>
         ) : (
           <>
             <WhatsAppButton producto={producto} />
             <a className="producto-instagram" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
-              Consultar por Instagram <span aria-hidden="true">↗</span>
+              Consultar por Instagram <span aria-hidden="true">↗︎</span>
             </a>
           </>
         )}
