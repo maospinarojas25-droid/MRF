@@ -2246,40 +2246,37 @@ body { font-size:16px; }
 }
 
 
-/* Ajustes de la guía de gorras para tabletas */
-@media (min-width: 701px) and (max-width: 1100px) {
-  .guia-modal-fondo {
-    padding: 16px;
-  }
-
-  .guia-modal-partes {
-    width: min(1180px, 100%);
-    max-height: calc(100svh - 32px);
-    overflow: auto;
-    padding: clamp(20px, 3vw, 34px);
-  }
-
-  .guia-opciones-visera {
-    gap: 14px;
-    margin-top: 18px;
-  }
-
-  .guia-opcion-imagen {
-    height: min(46svh, 460px);
-  }
-
-  .guia-opcion-visera figcaption {
-    gap: 8px;
-    padding: 12px;
-  }
+/* La guía debe empezar desde arriba y caber al 100% en PC y tablet */
+.guia-modal-fondo {
+  place-items: start center;
+  scroll-padding-block: 20px;
+}
+.guia-modal {
+  margin-block: auto;
+}
+.guia-modal-partes {
+  width: min(1180px, 100%);
+  max-height: calc(100svh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.guia-modal-partes h2 {
+  font-size: clamp(34px, 4vw, 48px);
+}
+.guia-opciones-visera {
+  align-items: start;
+  gap: clamp(12px, 1.5vw, 20px);
+  margin-top: 16px;
+}
+.guia-opcion-visera {
+  align-self: start;
+}
+.guia-opcion-imagen {
+  height: min(42svh, 420px);
 }
 
 @media (min-width: 701px) and (max-width: 900px) {
-  .guia-opciones-visera {
-    grid-template-columns: 1fr;
-  }
-
   .guia-opcion-imagen {
-    height: min(42svh, 400px);
+    height: min(36svh, 300px);
   }
 }
