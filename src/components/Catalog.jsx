@@ -19,6 +19,28 @@ function normalizarEquipo(equipo = '') {
   return nombre
 }
 
+function normalizarTextoCatalogo(texto = '') {
+  return String(texto).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('es')
+}
+
+const familiasColorCatalogo = [
+  { clave: 'negro', nombre: 'Negro', terminos: ['negro', 'negra', 'negr', 'black'] },
+  { clave: 'azul', nombre: 'Azul', terminos: ['azul', 'azules', 'navy', 'blue'] },
+  { clave: 'verde', nombre: 'Verde', terminos: ['verde', 'verdes', 'green'] },
+  { clave: 'rojo', nombre: 'Rojo', terminos: ['rojo', 'roja', 'red'] },
+  { clave: 'blanco', nombre: 'Blanco', terminos: ['blanco', 'blanca', 'white'] },
+  { clave: 'crema', nombre: 'Crema', terminos: ['crema', 'beige', 'hueso', 'ivory'] },
+  { clave: 'gris', nombre: 'Gris', terminos: ['gris', 'gray', 'grey'] },
+  { clave: 'cafe', nombre: 'Café', terminos: ['cafe', 'marron', 'brown'] },
+  { clave: 'rosado', nombre: 'Rosado', terminos: ['rosado', 'rosa', 'pink'] },
+  { clave: 'amarillo', nombre: 'Amarillo', terminos: ['amarillo', 'amarilla', 'yellow'] },
+]
+
+function familiaDeColor(color = '') {
+  const normalizado = normalizarTextoCatalogo(color)
+  return familiasColorCatalogo.find((familia) => familia.terminos.some((termino) => normalizado === termino || normalizado.startsWith(termino + ' ')))
+}
+
 const guias = {
   tallas: {
     etiqueta: 'AJUSTE Y MEDIDAS',
@@ -82,11 +104,23 @@ function Catalog() {
   const enStock = disponibles.filter((producto) => Number(producto.stockQuantity) > 0)
   const hayDisponibles = control.disponiblesHabilitados && enStock.length > 0
   const hayCatalogo = control.encargosHabilitados && modelosCatalogo.length > 0
-  const colores = [...new Set(productosColeccion.map((producto) => producto.color))]
-  const tallas = [...new Set(productosColeccion.filter((producto) => producto.tipo === 'Disponible' && producto.talla).map((producto) => producto.talla))]
-  const normalizarTextoCatalogo = (texto = '') =>
-    texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es')
+  const opcionesColor = [...new Map(productosColeccion
+    .map((producto) => String(producto.color || '').trim())
+    .filter(Boolean)
+    .map((color) => {
+      const familia = familiaDeColor(color)
+      const normalizado = normalizarTextoCatalogo(color)
+      return familia
+        ? [`familia:${familia.clave}`, { valor: `familia:${familia.clave}`, etiqueta: familia.nombre }]
+        : [`color:${normalizado}`, { valor: `color:${normalizado}`, etiqueta: color }]
+    }))].map(([, opcion]) => opcion).sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es'))
+  const tallas = [...new Map(productosColeccion
+    .filter((producto) => producto.tipo === 'Disponible' && producto.talla)
+    .map((producto) => String(producto.talla).trim())
+    .filter(Boolean)
+    .map((talla) => [normalizarTextoCatalogo(talla), talla]))].map(([, talla]) => talla)
   const termino = normalizarTextoCatalogo(busqueda)
+  const familiaBusqueda = familiasColorCatalogo.find((familia) => familia.terminos.includes(termino))
 
   const productosFiltrados = productosColeccion.filter((producto) => {
     const tipoEstaVisible =
@@ -96,8 +130,12 @@ function Catalog() {
       estadoElegido === 'Todos' ||
       (estadoElegido === 'En stock' && producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0) ||
       (estadoElegido === 'Catálogo' && producto.tipo === 'Catálogo')
-    const coincideBusqueda = normalizarTextoCatalogo(`${producto.nombre} ${producto.color} ${producto.ciudad}`).includes(termino)
-    const coincideColor = !colorElegido || producto.color === colorElegido
+    const textoProducto = normalizarTextoCatalogo(`${producto.nombre} ${producto.color} ${producto.ciudad}`)
+    const familiaProducto = familiaDeColor(producto.color)
+    const coincideBusqueda = textoProducto.includes(termino) || (familiaBusqueda && familiaProducto?.clave === familiaBusqueda.clave)
+    const coincideColor = !colorElegido || (colorElegido.startsWith('familia:')
+      ? familiaProducto?.clave === colorElegido.slice('familia:'.length)
+      : normalizarTextoCatalogo(producto.color) === colorElegido.slice('color:'.length))
     const coincideTalla = !tallaElegida || producto.talla === tallaElegida
     const coincideVisera = !estiloViseraElegido || producto.estiloVisera === estiloViseraElegido
 
@@ -351,19 +389,28 @@ function Catalog() {
             />
             {modoVista !== 'accesorios' && (
               <>
-                <select value={estiloViseraElegido} onChange={(evento) => setEstiloViseraElegido(evento.target.value)} aria-label="Filtrar por tipo de visera">
-                  <option value="">Todas las viseras</option>
-                  <option value="Plana">Visera plana</option>
-                  <option value="Curva">Visera curva</option>
-                </select>
-                <select value={colorElegido} onChange={(evento) => setColorElegido(evento.target.value)} aria-label="Filtrar por color">
-                  <option value="">Todos los colores</option>
-                  {colores.map((color) => <option key={color} value={color}>{color}</option>)}
-                </select>
-                <select value={tallaElegida} onChange={(evento) => setTallaElegida(evento.target.value)} aria-label="Filtrar por talla">
-                  <option value="">Todas las tallas</option>
-                  {tallas.map((talla) => <option key={talla} value={talla}>{talla}</option>)}
-                </select>
+                <div className="filtro-catalogo-con-limpiar">
+                  <select value={estiloViseraElegido} onChange={(evento) => setEstiloViseraElegido(evento.target.value)} aria-label="Filtrar por tipo de visera">
+                    <option value="">Todas las viseras</option>
+                    <option value="Plana">Visera plana</option>
+                    <option value="Curva">Visera curva</option>
+                  </select>
+                  {estiloViseraElegido && <button className="filtro-catalogo-quitar" type="button" onClick={() => setEstiloViseraElegido('')} aria-label="Quitar filtro de visera" title="Quitar filtro de visera">×</button>}
+                </div>
+                <div className="filtro-catalogo-con-limpiar">
+                  <select value={colorElegido} onChange={(evento) => setColorElegido(evento.target.value)} aria-label="Filtrar por familia de color">
+                    <option value="">Todos los colores</option>
+                    {opcionesColor.map((color) => <option key={color.valor} value={color.valor}>{color.etiqueta}</option>)}
+                  </select>
+                  {colorElegido && <button className="filtro-catalogo-quitar" type="button" onClick={() => setColorElegido('')} aria-label="Quitar filtro de color" title="Quitar filtro de color">×</button>}
+                </div>
+                <div className="filtro-catalogo-con-limpiar">
+                  <select value={tallaElegida} onChange={(evento) => setTallaElegida(evento.target.value)} aria-label="Filtrar por talla">
+                    <option value="">Todas las tallas</option>
+                    {tallas.map((talla) => <option key={talla} value={talla}>{talla}</option>)}
+                  </select>
+                  {tallaElegida && <button className="filtro-catalogo-quitar" type="button" onClick={() => setTallaElegida('')} aria-label="Quitar filtro de talla" title="Quitar filtro de talla">×</button>}
+                </div>
               </>
             )}
             <button className="limpiar-filtros" type="button" onClick={limpiarFiltros}>Limpiar filtros</button>
