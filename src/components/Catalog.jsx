@@ -52,11 +52,10 @@ const guias = {
   partes: {
     etiqueta: 'DETALLES DEL PRODUCTO',
     titulo: 'Partes de la gorra',
-    texto: 'Compara los dos estilos de visera y elige el que más te gusta.',
-    imagenes: [
-      { src: '/guias/visera-curva.png', titulo: 'Visera curva', termino: 'Curved visor', alt: 'Gorra azul MRF con visera curva' },
-      { src: '/guias/visera-plana.png', titulo: 'Visera plana', termino: 'Flat visor / flat brim', alt: 'Gorra negra MRF de estilo flat brim' },
-    ],
+    texto: 'Conoce los detalles de nuestra gorra negra MRF con visera plana.',
+    imagen: '/guias/visera-plana.png',
+    alt: 'Guía de la gorra negra MRF con visera plana',
+    whatsapp: true,
   },
 }
 
@@ -443,7 +442,7 @@ function Catalog() {
             <p className="etiqueta etiqueta-clara">{guiaSeleccionada.etiqueta}</p>
             <h2 id="guia-titulo">{guiaSeleccionada.titulo}</h2>
             <p className="guia-modal-texto">{guiaSeleccionada.texto}</p>
-            {guiaAbierta === 'partes' ? (
+            {guiaSeleccionada.imagenes ? (
               <div className="guia-opciones-visera">
                 {guiaSeleccionada.imagenes.map((opcion) => (
                   <figure className="guia-opcion-visera" key={opcion.titulo}>
@@ -463,17 +462,24 @@ function Catalog() {
                 ))}
               </div>
             ) : (
-              <div className="guia-imagen-marco">
-                <img src={guiaSeleccionada.imagen} alt={guiaSeleccionada.alt} onError={(evento) => {
-                  evento.currentTarget.style.display = 'none';
-                  const respaldo = evento.currentTarget.parentElement?.querySelector('.guia-imagen-vacia');
-                  if (respaldo) respaldo.style.display = 'flex';
-                }} />
-                <div className="guia-imagen-vacia">
-                  <strong>No se pudo cargar la guía.</strong>
-                  <span>Intenta recargar la página.</span>
+              <>
+                <div className="guia-imagen-marco guia-imagen-marco-partes">
+                  <img src={guiaSeleccionada.imagen} alt={guiaSeleccionada.alt} onError={(evento) => {
+                    evento.currentTarget.style.display = 'none';
+                    const respaldo = evento.currentTarget.parentElement?.querySelector('.guia-imagen-vacia');
+                    if (respaldo) respaldo.style.display = 'flex';
+                  }} />
+                  <div className="guia-imagen-vacia">
+                    <strong>No se pudo cargar la guía.</strong>
+                    <span>Intenta recargar la página.</span>
+                  </div>
                 </div>
-              </div>
+                {guiaSeleccionada.whatsapp && (
+                  <a className="visera-curvado-cta" href="https://wa.me/573224228633?text=Hola%2C%20me%20interesa%20una%20gorra%20de%20visera%20plana%2C%20pero%20quisiera%20saber%20si%20se%20puede%20curvar." target="_blank" rel="noreferrer">
+                    ¿La prefieres curva? Nosotros le damos forma. <strong>Cuéntanos por WhatsApp ↗︎</strong>
+                  </a>
+                )}
+              </>
             )}
           </section>
         </div>
