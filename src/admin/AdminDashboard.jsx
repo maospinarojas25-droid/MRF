@@ -223,7 +223,7 @@ function AdminDashboard() {
               <select value={filtroTipoProductos} onChange={(evento) => setFiltroTipoProductos(evento.target.value)} aria-label="Filtrar por tipo de producto">
                 <option value="Todos">Todos los tipos</option>
                 <option value="Disponible">Inventario físico</option>
-                <option value="Catálogo">Catálogo internacional</option>
+                <option value="Catálogo">Pedido bajo encargo</option>
               </select>
               <span>{productosFiltrados.length} de {productos.length} modelos</span>
             </div>
@@ -259,7 +259,7 @@ function AdminDashboard() {
           <h2>{formulario.id ? 'Editar producto' : 'Agregar un producto'}</h2>
           <label>Categoría<select name="categoria" value={formulario.categoria || 'Gorra'} onChange={cambiarCampo}><option value="Gorra">Gorra</option><option value="Accesorio">Accesorio</option></select></label>
           {formulario.categoria !== 'Accesorio' && <label>Estilo de visera<select name="estiloVisera" required value={formulario.estiloVisera || ''} onChange={cambiarCampo}><option value="">Selecciona: plana o curva</option><option value="Plana">Plana</option><option value="Curva">Curva</option></select></label>}
-          <label>Disponibilidad<select name="tipo" value={formulario.tipo} onChange={cambiarCampo}><option value="Disponible">Inventario físico</option><option value="Catálogo">Catálogo · pedir a otro país</option></select></label>
+          <label>Disponibilidad<select name="tipo" value={formulario.tipo} onChange={cambiarCampo}><option value="Disponible">Inventario físico</option><option value="Catálogo">Pedido bajo encargo</option></select></label>
           <label>Nombre<input name="nombre" required maxLength="100" value={formulario.nombre} onChange={cambiarCampo} placeholder="MRF LA Classic" /></label>
           <label>Descripción<textarea name="descripcion" rows="3" maxLength="600" value={formulario.descripcion} onChange={cambiarCampo} placeholder="Describe este producto" /></label>
           <div className="admin-campos-dobles">
@@ -273,7 +273,7 @@ function AdminDashboard() {
                 <label>Cantidad en stock<input name="stockQuantity" type="number" min="0" step="1" required value={formulario.stockQuantity} onChange={cambiarCampo} /><small>Al llegar a 0 se mostrará como agotado. Al venderlo, puedes eliminarlo desde el inventario.</small></label>
               </>
             ) : (
-              <p className="admin-ayuda admin-talla-no-aplica">{formulario.categoria === 'Accesorio' ? 'Los accesorios por encargo no requieren talla.' : 'Las gorras del catálogo internacional no llevan talla ni control de stock.'}</p>
+              <p className="admin-ayuda admin-talla-no-aplica">{formulario.categoria === 'Accesorio' ? 'Los accesorios por encargo no requieren talla.' : 'Las gorras bajo encargo no llevan talla ni control de stock.'}</p>
             )}
           </div>
           <label className="admin-subir-imagen">Foto de la gorra<input type="file" accept="image/jpeg,image/png,image/webp" onChange={seleccionarImagen} /><small>JPG, PNG o WebP · máximo 5 MB</small></label>
@@ -291,7 +291,7 @@ function AdminDashboard() {
           <p className="admin-ayuda">Activa o pausa las modalidades de venta. También puedes ocultar temporalmente toda la página pública cuando hagas mantenimiento.</p>
           <label className="admin-switch admin-switch-mantenimiento"><input type="checkbox" checked={ajustes.mantenimientoHabilitado} onChange={(evento) => setAjustes((actual) => ({ ...actual, mantenimientoHabilitado: evento.target.checked }))} /><span><strong>Poner la página en mantenimiento</strong><small>Los visitantes verán el logo MRF y el aviso de novedades. La administración seguirá disponible.</small></span></label>
           <label className="admin-switch"><input type="checkbox" checked={ajustes.disponiblesHabilitados} onChange={(evento) => setAjustes((actual) => ({ ...actual, disponiblesHabilitados: evento.target.checked }))} /><span><strong>Inventario físico</strong><small>Mostrar las gorras que tenemos en existencia local.</small></span></label>
-          <label className="admin-switch"><input type="checkbox" checked={ajustes.encargosHabilitados} onChange={(evento) => setAjustes((actual) => ({ ...actual, encargosHabilitados: evento.target.checked }))} /><span><strong>Catálogo internacional</strong><small>Mostrar modelos que se piden a otro país.</small></span></label>
+          <label className="admin-switch"><input type="checkbox" checked={ajustes.encargosHabilitados} onChange={(evento) => setAjustes((actual) => ({ ...actual, encargosHabilitados: evento.target.checked }))} /><span><strong>Pedido bajo encargo</strong><small>Mostrar modelos que el cliente puede solicitar por encargo.</small></span></label>
           <label>Mensaje cuando no hay disponibles<textarea rows="3" value={ajustes.mensajeSinDisponibles} onChange={(evento) => setAjustes((actual) => ({ ...actual, mensajeSinDisponibles: evento.target.value }))} /></label>
           <label>Mensaje cuando no hay modelos de catálogo<textarea rows="3" value={ajustes.mensajeSinEncargos} onChange={(evento) => setAjustes((actual) => ({ ...actual, mensajeSinEncargos: evento.target.value }))} /></label>
           <button className="admin-boton-principal" type="submit" disabled={guardandoAjustes}>{guardandoAjustes ? 'Guardando…' : 'Guardar cambios'}</button>
@@ -308,3 +308,6 @@ export default AdminDashboard
 
 
 
+
+
+The focused UI element is 1 AXWebArea raw.githubusercontent.com/maria1ospina-lab/MRF/main/src/admin/AdminDashboard.jsx
