@@ -15,7 +15,7 @@ function ProductCard({ producto }) {
           ) : (
             <span>FOTO DE GORRA<br />PENDIENTE</span>
           )}
-          <span className={producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'producto-etiqueta producto-etiqueta-stock' : 'producto-etiqueta producto-etiqueta-agotada') : 'producto-etiqueta'}>{producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : 'Catálogo'}</span>
+          <span className={producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'producto-etiqueta producto-etiqueta-stock' : 'producto-etiqueta producto-etiqueta-agotada') : 'producto-etiqueta'}>{producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : 'Bajo encargo'}</span>
         </div>
       </Link>
 
