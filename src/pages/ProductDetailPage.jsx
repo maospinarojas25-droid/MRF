@@ -35,7 +35,7 @@ function ProductDetailPage() {
   const producto = productoRemoto || productoLocal
   const estadoStock = producto?.tipo === 'Disponible'
     ? Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada'
-    : 'Bajo encargo'
+    : 'Catálogo'
 
   if (!producto && cargandoRemoto) {
     return <main className="detalle-no-encontrado"><p>Cargando gorra…</p></main>
@@ -84,11 +84,11 @@ function ProductDetailPage() {
             <p className={producto.tipo === 'Disponible' ? 'detalle-aviso-stock' : 'detalle-aviso-catalogo'}>
               {producto.tipo === 'Disponible'
                 ? (Number(producto.stockQuantity) > 0 ? 'En stock: disponible físicamente en Colombia.' : 'Agotada por ahora. Escríbenos para consultar próximas unidades.')
-                : 'Pedido bajo encargo. Tiempo estimado de llegada: 2 a 3 semanas.'}
+                : 'Modelo por catálogo. Tiempo estimado de llegada: 2 a 3 semanas.'}
             </p>
             {producto.categoria !== 'Accesorio' && (
               <button type="button" className="detalle-guia-tallas" onClick={() => setGuiaTallasAbierta(true)}>
-                ¿No sabes qué talla elegir? <strong>Ver guía de tallas</strong><span aria-hidden="true">↗</span>
+                ¿No sabes qué talla elegir? <strong>Ver guía de tallas</strong><span aria-hidden="true">↗︎</span>
               </button>
             )}
             {producto.caracteristicas?.length > 0 && (
