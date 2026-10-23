@@ -44,6 +44,7 @@ function AdminDashboard() {
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
   const [versionVista, setVersionVista] = useState(0)
+  const [productosOcultos, setProductosOcultos] = useState(false)
   const consultaNormalizada = busquedaProductos.trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   const productosFiltrados = productos.filter((producto) => {
     const coincideTipo = filtroTipoProductos === 'Todos' || producto.tipo === filtroTipoProductos
@@ -216,8 +217,12 @@ function AdminDashboard() {
       <section className="admin-seccion admin-inventario">
         <div className="admin-seccion-titulo">
           <div><p className="admin-etiqueta">01 · PRODUCTOS</p><h2>Productos del catálogo</h2></div>
-          <button type="button" className="admin-boton-principal admin-boton-compacto" onClick={nuevoProducto}>+ Agregar producto</button>
+          <div className="admin-inventario-controles">
+            <button type="button" className="admin-inventario-toggle" aria-expanded={!productosOcultos} aria-controls="admin-inventario-contenido" onClick={() => setProductosOcultos((ocultos) => !ocultos)}>{productosOcultos ? 'Mostrar productos' : 'Ocultar productos'} <span aria-hidden="true">{productosOcultos ? '↓' : '↑'}</span></button>
+            <button type="button" className="admin-boton-principal admin-boton-compacto" onClick={nuevoProducto}>+ Agregar producto</button>
+          </div>
         </div>
+        <div id="admin-inventario-contenido" hidden={productosOcultos}>
         {cargando ? <p className="admin-cargando">Cargando productos…</p> : productos.length ? (
           <>
             <div className="admin-inventario-filtros">
@@ -259,6 +264,7 @@ function AdminDashboard() {
             ) : <div className="admin-vacio admin-inventario-sin-resultados"><strong>No encontramos productos con esos filtros.</strong><span>Prueba con otro nombre, equipo, color o categoría.</span></div>}
           </>
         ) : <div className="admin-vacio"><strong>Aún no hay productos guardados.</strong><span>Agregalas desde el formulario para que aparezcan en el catálogo público.</span></div>}
+        </div>
       </section>
 
       <section className="admin-seccion admin-dos-columnas">
