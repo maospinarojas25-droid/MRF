@@ -35,7 +35,7 @@ function ProductDetailPage() {
   const producto = productoRemoto || productoLocal
   const estadoStock = producto?.tipo === 'Disponible'
     ? Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada'
-    : 'Catálogo internacional'
+    : 'Bajo encargo'
 
   if (!producto && cargandoRemoto) {
     return <main className="detalle-no-encontrado"><p>Cargando gorra…</p></main>
@@ -84,7 +84,7 @@ function ProductDetailPage() {
             <p className={producto.tipo === 'Disponible' ? 'detalle-aviso-stock' : 'detalle-aviso-catalogo'}>
               {producto.tipo === 'Disponible'
                 ? (Number(producto.stockQuantity) > 0 ? 'En stock: disponible físicamente en Colombia.' : 'Agotada por ahora. Escríbenos para consultar próximas unidades.')
-                : 'Bajo pedido internacional. Tiempo estimado de llegada: 2 a 3 semanas.'}
+                : 'Pedido bajo encargo. Tiempo estimado de llegada: 2 a 3 semanas.'}
             </p>
             {producto.categoria !== 'Accesorio' && (
               <button type="button" className="detalle-guia-tallas" onClick={() => setGuiaTallasAbierta(true)}>
@@ -121,3 +121,6 @@ function ProductDetailPage() {
 }
 
 export default ProductDetailPage
+
+
+The focused UI element is 1 AXWebArea raw.githubusercontent.com/maria1ospina-lab/MRF/main/src/pages/ProductDetailPage.jsx
