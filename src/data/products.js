@@ -69,7 +69,7 @@ export const controlCatalogo = {
   disponiblesHabilitados: true,
   encargosHabilitados: true,
   mensajeSinDisponibles:
-    'Por ahora no hay gorras disponibles en físico. Explora los modelos disponibles para pedido bajo encargo.',
+    'Por ahora no hay gorras disponibles en físico. Explora los modelos disponibles en el catálogo.',
   mensajeSinEncargos:
-    'Por ahora no hay modelos disponibles para pedido bajo encargo. Consulta las gorras disponibles en físico.',
+    'Por ahora no hay modelos disponibles en el catálogo. Consulta las gorras disponibles en físico.',
 }
