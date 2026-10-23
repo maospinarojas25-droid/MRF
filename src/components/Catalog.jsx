@@ -226,7 +226,7 @@ function Catalog() {
             <span className="opcion-principal-numero">01</span>
             <span className="opcion-principal-etiqueta">CATÁLOGO COMPLETO</span>
             <strong>Todas las gorras</strong>
-            <span className="opcion-principal-pie">Ver todos los modelos <b>↗</b></span>
+            <span className="opcion-principal-pie">Ver todos los modelos <b>↗︎</b></span>
           </button>
 
           <button
@@ -241,14 +241,14 @@ function Catalog() {
             <strong>Equipos</strong>
             <span className="opcion-principal-pie">
               {equiposAbiertos ? 'Elige un equipo' : 'Explorar por equipo'}
-              <b>{equiposAbiertos ? '⌄' : '↗'}</b>
+              <b>{equiposAbiertos ? '⌄' : '↗︎'}</b>
             </span>
           </button>
           <button className="opcion-principal opcion-accesorios" type="button" onClick={seleccionarAccesorios}>
             <span className="opcion-principal-numero">03</span>
             <span className="opcion-principal-etiqueta">COMPLEMENTOS</span>
             <strong>Accesorios</strong>
-            <span className="opcion-principal-pie">Explorar accesorios <b>↗</b></span>
+            <span className="opcion-principal-pie">Explorar accesorios <b>↗︎</b></span>
           </button>
 
         </div>
@@ -281,13 +281,13 @@ function Catalog() {
               >
                 <span>EQUIPO / {equipo.numero}</span>
                 <strong>{equipo.nombre}</strong>
-                <b aria-hidden="true">↗</b>
+                <b aria-hidden="true">↗︎</b>
               </button>
             ))}
           </div>
           <button className="subselector-variedades" type="button" onClick={() => seleccionarEquipo('VARIEDADES')}>
             <span><strong>Más variedades</strong><small>Explora gorras de cualquier otro equipo</small></span>
-            <b aria-hidden="true">↗</b>
+            <b aria-hidden="true">↗︎</b>
           </button>
         </div>
       )}
@@ -301,7 +301,7 @@ function Catalog() {
             <p>Elige el ajuste ideal para ti.</p>
           </div>
           <button type="button" onClick={() => setGuiaAbierta('tallas')}>
-            Ver guía <span aria-hidden="true">↗</span>
+            Ver guía <span aria-hidden="true">↗︎</span>
           </button>
         </article>
         <article className="guia-teaser">
@@ -312,7 +312,7 @@ function Catalog() {
             <p>Identifica cada parte y acabado.</p>
           </div>
           <button type="button" onClick={() => setGuiaAbierta('partes')}>
-            Ver detalles <span aria-hidden="true">↗</span>
+            Ver detalles <span aria-hidden="true">↗︎</span>
           </button>
         </article>
       </div>}
@@ -337,7 +337,7 @@ function Catalog() {
               </div>
               {hayCatalogo && (
                 <button type="button" onClick={() => setEstadoElegido('Catálogo')}>
-                  Ver catálogo <span aria-hidden="true">↗</span>
+                  Ver catálogo <span aria-hidden="true">↗︎</span>
                 </button>
               )}
             </aside>
@@ -352,7 +352,7 @@ function Catalog() {
 
           <aside className="catalogo-aclaracion" aria-label="Tiempos y disponibilidad">
             <span><strong>EN STOCK</strong> · Lo tenemos físicamente.</span>
-            <span><strong>PEDIDO BAJO ENCARGO</strong> · Tiempo estimado de llegada: 2 a 3 semanas.</span>
+            <span><strong>CATÁLOGO</strong> · Tiempo estimado de llegada: 2 a 3 semanas.</span>
           </aside>
 
           <div className="estado-filtros" role="group" aria-label="Filtrar por disponibilidad">
@@ -373,7 +373,7 @@ function Catalog() {
                   onClick={() => setEstadoElegido(estado)}
                   aria-pressed={estadoElegido === estado}
                 >
-                  {estado === 'En stock' && cantidad === 0 ? 'Sin stock' : estado === 'Catálogo' ? 'Bajo encargo' : estado} <span>{cantidad}</span>
+                  {estado === 'En stock' && cantidad === 0 ? 'Sin stock' : estado === 'Catálogo' ? 'Catálogo' : estado} <span>{cantidad}</span>
                 </button>
               )
             })}
@@ -456,7 +456,7 @@ function Catalog() {
                     </figcaption>
                     {opcion.titulo === 'Visera plana' && (
                       <a className="visera-curvado-cta" href="https://wa.me/573224228633?text=Hola%2C%20me%20interesa%20una%20gorra%20de%20visera%20plana%2C%20pero%20quisiera%20saber%20si%20se%20puede%20curvar." target="_blank" rel="noreferrer">
-                        ¿La prefieres curva? Nosotros le damos forma. <strong>Cuéntanos por WhatsApp ↗</strong>
+                        ¿La prefieres curva? Nosotros le damos forma. <strong>Cuéntanos por WhatsApp ↗︎</strong>
                       </a>
                     )}
                   </figure>
