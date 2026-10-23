@@ -2270,3 +2270,8 @@ body { font-size:16px; }
 .guia-imagen-marco-partes {
   height: min(66svh, 720px);
 }
+
+
+/* Mejor contraste para el texto de la guía sobre el fondo claro */
+.visera-curvado-cta { color: #292824; border-top-color: #d4cfc5; }
+.visera-curvado-cta strong { color: #f26b38; }
