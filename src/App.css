@@ -2259,3 +2259,14 @@ body { font-size:16px; }
     height: min(44svh, 380px);
   }
 }
+
+
+/* La gorra única usa el mismo panel que la guía de tallas */
+.guia-modal-partes {
+  width: min(720px, 100%);
+  max-height: min(90svh, 900px);
+  overflow: auto;
+}
+.guia-imagen-marco-partes {
+  height: min(66svh, 720px);
+}
