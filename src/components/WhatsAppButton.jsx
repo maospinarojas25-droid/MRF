@@ -16,7 +16,7 @@ function WhatsAppButton({ producto }) {
       target="_blank"
       rel="noreferrer"
     >
-      Consultar por WhatsApp <span aria-hidden="true">↗</span>
+      Consultar por WhatsApp <span aria-hidden="true">↗︎</span>
     </a>
   )
 }
