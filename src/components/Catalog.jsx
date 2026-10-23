@@ -84,7 +84,9 @@ function Catalog() {
   const hayCatalogo = control.encargosHabilitados && modelosCatalogo.length > 0
   const colores = [...new Set(productosColeccion.map((producto) => producto.color))]
   const tallas = [...new Set(productosColeccion.filter((producto) => producto.tipo === 'Disponible' && producto.talla).map((producto) => producto.talla))]
-  const termino = busqueda.trim().toLowerCase()
+  const normalizarTextoCatalogo = (texto = '') =>
+    texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es')
+  const termino = normalizarTextoCatalogo(busqueda)
 
   const productosFiltrados = productosColeccion.filter((producto) => {
     const tipoEstaVisible =
@@ -94,9 +96,7 @@ function Catalog() {
       estadoElegido === 'Todos' ||
       (estadoElegido === 'En stock' && producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0) ||
       (estadoElegido === 'Catálogo' && producto.tipo === 'Catálogo')
-    const coincideBusqueda = `${producto.nombre} ${producto.color} ${producto.ciudad}`
-      .toLowerCase()
-      .includes(termino)
+    const coincideBusqueda = normalizarTextoCatalogo(`${producto.nombre} ${producto.color} ${producto.ciudad}`).includes(termino)
     const coincideColor = !colorElegido || producto.color === colorElegido
     const coincideTalla = !tallaElegida || producto.talla === tallaElegida
     const coincideVisera = !estiloViseraElegido || producto.estiloVisera === estiloViseraElegido
@@ -346,8 +346,8 @@ function Catalog() {
               type="search"
               value={busqueda}
               onChange={(evento) => setBusqueda(evento.target.value)}
-              placeholder={modoVista === 'accesorios' ? 'Búsqueda' : 'Buscar gorra, accesorio o equipo'}
-              aria-label={modoVista === 'accesorios' ? 'Búsqueda de accesorios' : 'Buscar gorras por nombre o equipo'}
+              placeholder={modoVista === 'accesorios' ? 'Búsqueda' : 'Buscar por gorra, color o equipo'}
+              aria-label={modoVista === 'accesorios' ? 'Búsqueda de accesorios' : 'Buscar gorras por nombre, color o equipo'}
             />
             {modoVista !== 'accesorios' && (
               <>
