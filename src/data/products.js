@@ -15,7 +15,7 @@ export const colecciones = [
   },
 ]
 
-// Clasifica cada modelo como "Disponible" (en físico) o "Catálogo" (se pide a otro país).
+// Clasifica cada modelo como "Disponible" (en físico) o "Catálogo" (se solicita bajo encargo).
 export const productosEjemplo = [
   {
     id: 'gorra-001',
@@ -69,7 +69,7 @@ export const controlCatalogo = {
   disponiblesHabilitados: true,
   encargosHabilitados: true,
   mensajeSinDisponibles:
-    'Por ahora no hay gorras disponibles en físico. Explora el catálogo internacional.',
+    'Por ahora no hay gorras disponibles en físico. Explora los modelos disponibles para pedido bajo encargo.',
   mensajeSinEncargos:
-    'Por ahora no hay modelos en el catálogo internacional. Consulta las gorras disponibles en físico.',
+    'Por ahora no hay modelos disponibles para pedido bajo encargo. Consulta las gorras disponibles en físico.',
 }
