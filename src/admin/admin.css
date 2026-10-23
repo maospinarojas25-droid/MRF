@@ -210,3 +210,7 @@
 @media (max-width: 580px) {
   .admin-vista-simultanea { width: calc(100% - 28px); height: 46vh; min-height: 300px; padding: 12px; }
 }
+
+.admin-quitar-imagen { align-self:flex-start; display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:0 11px; border:1px solid #754333; border-radius:5px; background:transparent; color:#ffad8b; font:inherit; font-size:11px; cursor:pointer; }
+.admin-quitar-imagen:hover { border-color:#f26b38; background:#291e19; }
+.admin-quitar-imagen span { font-size:18px; line-height:1; }
