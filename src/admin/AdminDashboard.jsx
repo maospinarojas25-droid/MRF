@@ -278,7 +278,7 @@ function AdminDashboard() {
           <label>Descripción<textarea name="descripcion" rows="3" maxLength="600" value={formulario.descripcion} onChange={cambiarCampo} placeholder="Describe este producto" /></label>
           <div className="admin-campos-dobles">
             <label>{formulario.categoria === 'Accesorio' ? 'Equipo o línea (opcional)' : 'Equipo'}<input name="ciudad" required={formulario.tipo === 'Disponible' && formulario.categoria !== 'Accesorio'} maxLength="40" value={formulario.ciudad} onChange={cambiarCampo} placeholder={formulario.categoria === 'Accesorio' ? 'MRF, LA u otro' : 'LA, NY Yankees, SOX u otro'} /></label>
-            <label>Color<input name="color" required maxLength="40" value={formulario.color} onChange={cambiarCampo} placeholder="Negro" /></label>
+            <label>{formulario.categoria === 'Accesorio' ? 'Color (opcional)' : 'Color'}<input name="color" required={formulario.categoria !== 'Accesorio'} maxLength="40" value={formulario.color} onChange={cambiarCampo} placeholder={formulario.categoria === 'Accesorio' ? 'Opcional' : 'Negro'} /></label>
           </div>
           <div className="admin-campos-dobles">
             {formulario.tipo === 'Disponible' ? (
