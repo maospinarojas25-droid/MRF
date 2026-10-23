@@ -55,7 +55,7 @@ function Header() {
 
         <div className="encabezado-acciones">
           <Link className="enlace-catalogo" to="/gorras">
-            Explorar <span aria-hidden="true">↗</span>
+            Explorar <span aria-hidden="true">↗︎</span>
           </Link>
         </div>
 
