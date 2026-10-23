@@ -214,3 +214,10 @@
 .admin-quitar-imagen { align-self:flex-start; display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:0 11px; border:1px solid #754333; border-radius:5px; background:transparent; color:#ffad8b; font:inherit; font-size:11px; cursor:pointer; }
 .admin-quitar-imagen:hover { border-color:#f26b38; background:#291e19; }
 .admin-quitar-imagen span { font-size:18px; line-height:1; }
+
+
+.admin-inventario-controles { display:flex; align-items:center; gap:8px; }
+.admin-inventario-toggle { min-height:38px; padding:0 12px; display:inline-flex; align-items:center; gap:10px; border:1px solid #5c5952; border-radius:5px; background:transparent; color:#f4f0e8; font:inherit; font-size:11px; cursor:pointer; white-space:nowrap; }
+.admin-inventario-toggle:hover { border-color:#f26b38; background:#291e19; }
+.admin-inventario-toggle span { font-size:15px; line-height:1; }
+@media (max-width:580px) { .admin-inventario-controles { flex-wrap:wrap; justify-content:flex-end; } }
