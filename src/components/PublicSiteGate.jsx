@@ -57,7 +57,7 @@ function PublicSiteGate({ children }) {
       {mantenimiento && vistaPreviaAdmin && (
         <aside className="mrf-vista-previa-aviso">
           <span><strong>VISTA PREVIA</strong> · Solo tú puedes ver el sitio mientras está en mantenimiento.</span>
-          <Link to="/admin">Volver a administración <span aria-hidden="true">↗</span></Link>
+          <Link to="/admin">Volver a administración <span aria-hidden="true">↗︎</span></Link>
         </aside>
       )}
       {children}
