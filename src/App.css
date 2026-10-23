@@ -2246,37 +2246,16 @@ body { font-size:16px; }
 }
 
 
-/* La guía debe empezar desde arriba y caber al 100% en PC y tablet */
-.guia-modal-fondo {
-  place-items: start center;
-  scroll-padding-block: 20px;
-}
-.guia-modal {
-  margin-block: auto;
-}
-.guia-modal-partes {
-  width: min(1180px, 100%);
-  max-height: calc(100svh - 40px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-.guia-modal-partes h2 {
-  font-size: clamp(34px, 4vw, 48px);
-}
-.guia-opciones-visera {
-  align-items: start;
-  gap: clamp(12px, 1.5vw, 20px);
-  margin-top: 16px;
-}
-.guia-opcion-visera {
-  align-self: start;
-}
+/* Recuperar área para las imágenes de la guía en PC y tablet */
 .guia-opcion-imagen {
-  height: min(42svh, 420px);
+  height: min(50svh, 500px);
+}
+.guia-opcion-imagen img {
+  object-fit: contain;
 }
 
 @media (min-width: 701px) and (max-width: 900px) {
   .guia-opcion-imagen {
-    height: min(36svh, 300px);
+    height: min(44svh, 380px);
   }
 }
