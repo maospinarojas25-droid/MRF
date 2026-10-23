@@ -314,7 +314,7 @@ function Catalog() {
 
           <aside className="catalogo-aclaracion" aria-label="Tiempos y disponibilidad">
             <span><strong>EN STOCK</strong> · Lo tenemos físicamente.</span>
-            <span><strong>CATÁLOGO</strong> · Pedido internacional; tarda de 2 a 3 semanas en llegar.</span>
+            <span><strong>PEDIDO BAJO ENCARGO</strong> · Tiempo estimado de llegada: 2 a 3 semanas.</span>
           </aside>
 
           <div className="estado-filtros" role="group" aria-label="Filtrar por disponibilidad">
@@ -335,7 +335,7 @@ function Catalog() {
                   onClick={() => setEstadoElegido(estado)}
                   aria-pressed={estadoElegido === estado}
                 >
-                  {estado === 'En stock' && cantidad === 0 ? 'Sin stock' : estado} <span>{cantidad}</span>
+                  {estado === 'En stock' && cantidad === 0 ? 'Sin stock' : estado === 'Catálogo' ? 'Bajo encargo' : estado} <span>{cantidad}</span>
                 </button>
               )
             })}
