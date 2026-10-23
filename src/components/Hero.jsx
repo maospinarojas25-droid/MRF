@@ -103,7 +103,7 @@ function Hero() {
         </h1>
         <p className="descripcion">{textoPortada.descripcion}</p>
         <Link className="boton" to="/gorras">
-          {textoPortada.textoBoton} <span aria-hidden="true">↗</span>
+          {textoPortada.textoBoton} <span aria-hidden="true">↗︎</span>
         </Link>
       </div>
 
