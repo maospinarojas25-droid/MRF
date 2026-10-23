@@ -42,7 +42,7 @@ function ProductCard({ producto }) {
           <>
             <WhatsAppButton producto={producto} />
             <a className="producto-instagram" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
-              Síguenos en Instagram <span aria-hidden="true">↗</span>
+              Consultar por Instagram <span aria-hidden="true">↗</span>
             </a>
           </>
         )}
