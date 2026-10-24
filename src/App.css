@@ -2275,3 +2275,15 @@ body { font-size:16px; }
 /* Mejor contraste para el texto de la guía sobre el fondo claro */
 .visera-curvado-cta { color: #292824; border-top-color: #d4cfc5; }
 .visera-curvado-cta strong { color: #f26b38; }
+
+
+/* En celular, deja una muestra corta de cada descripción; el detalle conserva el texto completo */
+@media (max-width: 650px) {
+  .catalogo-mrf .producto-descripcion {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+}
