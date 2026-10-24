@@ -7,13 +7,14 @@ function ProductCard({ producto }) {
       <Link
         className="producto-link"
         to={'/producto/' + producto.id}
+        state={{ categoria: producto.categoria }}
         aria-label={'Ver detalles de ' + producto.nombre}
       >
         <div className="producto-foto">
           {producto.imagen ? (
             <img src={producto.imagen} alt={producto.nombre} />
           ) : (
-            <span>FOTO DE GORRA<br />PENDIENTE</span>
+            <span>FOTO DEL PRODUCTO<br />PENDIENTE</span>
           )}
           <span className={producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'producto-etiqueta producto-etiqueta-stock' : 'producto-etiqueta producto-etiqueta-agotada') : 'producto-etiqueta'}>{producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : 'Catálogo'}</span>
         </div>
@@ -28,7 +29,8 @@ function ProductCard({ producto }) {
           {producto.estiloVisera && <span>Visera {producto.estiloVisera.toLowerCase()}</span>}
         </div>
         {producto.descripcion && <p className="producto-descripcion">{producto.descripcion}</p>}
-        <Link className="producto-ver-detalles" to={'/producto/' + producto.id}>
+        <Link className="producto-ver-detalles" to={'/producto/' + producto.id}
+        state={{ categoria: producto.categoria }}>
           Ver detalles ↗︎
         </Link>
       </div>
