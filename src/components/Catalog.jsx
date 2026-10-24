@@ -172,9 +172,10 @@ function Catalog() {
   }
 
   function volverASeleccion() {
+    const volverAEquipos = modoVista === 'equipos'
     setModoVista('')
     setColeccionElegida('')
-    setEquiposAbiertos(false)
+    setEquiposAbiertos(volverAEquipos)
     setEstiloViseraElegido('')
     setEstadoElegido('Todos')
     setBusqueda('')
@@ -254,7 +255,7 @@ function Catalog() {
       ) : (
         <button className="volver-opciones" type="button" onClick={volverASeleccion}>
           <span className="volver-opciones-icono" aria-hidden="true">←</span>
-          <span>Cambiar selección</span>
+          <span>{modoVista === 'equipos' ? 'Cambiar equipo' : 'Cambiar selección'}</span>
         </button>
       )}
 
