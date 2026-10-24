@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import WhatsAppButton from '../components/WhatsAppButton'
@@ -8,9 +8,12 @@ import { cargarProducto } from '../data/catalogApi'
 
 function ProductDetailPage() {
   const { id } = useParams()
+  const location = useLocation()
   const [productoRemoto, setProductoRemoto] = useState(undefined)
   const [cargandoRemoto, setCargandoRemoto] = useState(true)
   const productoLocal = productosEjemplo.find((item) => item.id === id)
+  const categoriaEnCarga = location.state?.categoria || productoLocal?.categoria
+  const textoCarga = categoriaEnCarga === 'Accesorio' ? 'Cargando accesorio…' : categoriaEnCarga ? 'Cargando gorra…' : 'Cargando producto…'
   const [guiaTallasAbierta, setGuiaTallasAbierta] = useState(false)
 
   useEffect(() => {
@@ -38,7 +41,7 @@ function ProductDetailPage() {
     : 'Catálogo'
 
   if (!producto && cargandoRemoto) {
-    return <main className="detalle-no-encontrado"><p>Cargando gorra…</p></main>
+    return <main className="detalle-no-encontrado"><p>{textoCarga}</p></main>
   }
 
   if (!producto) {
@@ -47,7 +50,7 @@ function ProductDetailPage() {
         <Header />
         <main className="detalle-no-encontrado">
           <p className="etiqueta etiqueta-clara">CATÁLOGO MRF</p>
-          <h1>Esta gorra no está disponible.</h1>
+          <h1>Este producto no está disponible.</h1>
           <Link className="volver-opciones" to="/gorras">Volver al catálogo</Link>
         </main>
         <Footer />
