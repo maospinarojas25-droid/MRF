@@ -2136,6 +2136,58 @@ body { font-size:16px; }
  .detalle-aviso-stock,.detalle-aviso-catalogo { font-size:14px; }
 }
 
+/* Acciones de contacto con el mismo tamaño y jerarquía visual en cada tarjeta */
+.catalogo-mrf .producto-contacto {
+  display: grid;
+  gap: 8px;
+}
+.catalogo-mrf .producto-contacto .producto-whatsapp,
+.catalogo-mrf .producto-contacto .producto-instagram {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  margin: 0;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #171715;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.015em;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.catalogo-mrf .producto-contacto .producto-whatsapp {
+  background: #171715;
+  color: #f4f0e8;
+}
+.catalogo-mrf .producto-contacto .producto-instagram {
+  background: #f1eee7;
+  color: #292824;
+}
+.catalogo-mrf .producto-contacto .producto-whatsapp span,
+.catalogo-mrf .producto-contacto .producto-instagram span {
+  flex: 0 0 auto;
+  color: #f26b38;
+}
+.catalogo-mrf .producto-contacto .producto-whatsapp:hover {
+  border-color: #f26b38;
+  background: #f26b38;
+  color: #171715;
+}
+.catalogo-mrf .producto-contacto .producto-whatsapp:hover span,
+.catalogo-mrf .producto-contacto .producto-instagram:hover span {
+  color: #171715;
+}
+.catalogo-mrf .producto-contacto .producto-instagram:hover {
+  border-color: #f26b38;
+  background: #f6dfd4;
+}
+
 /* Tres categorías principales y adaptación al ancho disponible */
 .selector-principal-catalogo { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .selector-principal-catalogo .opcion-principal { min-height:220px; }
