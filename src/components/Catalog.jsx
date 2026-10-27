@@ -83,6 +83,45 @@ function encontrarRegionFoto(bitmap) {
   contexto.drawImage(bitmap, desplazamientoX, desplazamientoY, ancho, alto)
 
   const pixeles = contexto.getImageData(0, 0, ladoAnalisis, ladoAnalisis).data
+
+  // En capturas de Fotos/WhatsApp la foto suele quedar como una franja casi
+  // cuadrada entre barras negras. Detectar esa franja evita comparar el marco
+  // del teléfono en vez de la gorra.
+  const brilloFilas = Array.from({ length: ladoAnalisis }, (_, y) => {
+    let suma = 0
+    for (let x = desplazamientoX; x < desplazamientoX + ancho; x += 1) {
+      const indice = (y * ladoAnalisis + x) * 4
+      suma += pixeles[indice] * 0.299 + pixeles[indice + 1] * 0.587 + pixeles[indice + 2] * 0.114
+    }
+    return suma / ancho
+  })
+  let inicioFranja = -1
+  let mejorFranja = null
+  for (let y = 0; y <= ladoAnalisis; y += 1) {
+    const dentroDeFoto = y < ladoAnalisis && brilloFilas[y] > 66
+    if (dentroDeFoto && inicioFranja < 0) inicioFranja = y
+    if (!dentroDeFoto && inicioFranja >= 0) {
+      const finFranja = y - 1
+      const altoFranja = finFranja - inicioFranja + 1
+      const proporcion = ancho / altoFranja
+      const tieneBarrasOscuras = inicioFranja >= 3 && finFranja < ladoAnalisis - 3
+        && brilloFilas[inicioFranja - 1] < 48
+        && brilloFilas[finFranja + 1] < 48
+      if (tieneBarrasOscuras && altoFranja >= 12 && proporcion >= 0.65 && proporcion <= 1.4) {
+        if (!mejorFranja || altoFranja > mejorFranja.alto) mejorFranja = { inicio: inicioFranja, alto: altoFranja }
+      }
+      inicioFranja = -1
+    }
+  }
+  if (mejorFranja) {
+    return {
+      x: 0,
+      y: (mejorFranja.inicio - desplazamientoY) / escala,
+      ancho: bitmap.width,
+      alto: mejorFranja.alto / escala,
+    }
+  }
+
   const fondoClaro = new Uint8Array(ladoAnalisis * ladoAnalisis)
   for (let i = 0; i < fondoClaro.length; i += 1) {
     const indice = i * 4
