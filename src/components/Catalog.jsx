@@ -382,7 +382,7 @@ function Catalog() {
         ? candidatos.filter((resultado) => mejorSimilitud - resultado.similitud <= 0.07).map((resultado) => resultado.id)
         : []
       setCoincidenciasImagen(coincidencias)
-      setBusquedaImagenPorColor(Boolean(coincidencias.length && comparablesMismoColor.length && mejorSimilitud < 0.66))
+      setBusquedaImagenPorColor(Boolean(coincidencias.length && comparablesMismoColor.length))
       if (!coincidencias.length) setErrorBusquedaImagen('No encontramos esa gorra en el catálogo. Prueba con otra foto o explora todos los modelos.')
     } catch {
       if (solicitudImagen !== solicitudImagenRef.current) return
@@ -650,7 +650,7 @@ function Catalog() {
               ? `Comparando la foto con ${productosColeccion.filter((producto) => producto.imagen).length} gorras del catálogo…`
               : coincidenciasImagen?.length
                 ? busquedaImagenPorColor
-                  ? `Encontramos gorras ${familiasColorCatalogo.find((familia) => familia.clave === colorBusquedaImagen)?.nombre?.toLowerCase() || 'del mismo color'}. Revisa las letras del frente.`
+                  ? `Gorras parecidas de color ${colorBusquedaImagen}. Revisa el bordado del frente.`
                   : coincidenciasImagen.length === 1 ? 'Encontramos esta gorra en el catálogo.' : `Encontramos ${coincidenciasImagen.length} gorras parecidas. Revisa el color y las letras del frente.`
                 : 'La foto se compara en este dispositivo; no se sube al catálogo.')}</p>
             <button type="button" onClick={quitarBusquedaImagen} aria-label="Quitar imagen de búsqueda">×</button>
@@ -680,8 +680,12 @@ function Catalog() {
             </div>
           ) : (
             <div className="sin-resultados">
-              <h3>{coincidenciasImagen !== null ? 'No encontramos esa gorra en el catálogo.' : 'No hay modelos con esta selección.'}</h3>
-              <p>{coincidenciasImagen !== null ? 'Prueba con una foto clara donde se vea la gorra completa, o explora todos los modelos.' : 'Prueba otra opción o limpia los filtros para ver más productos.'}</p>
+              <h3>{coincidenciasImagen !== null
+                ? colorBusquedaImagen && !productosColeccion.some((producto) => familiaDeColor(producto.color || '')?.clave === colorBusquedaImagen)
+                  ? `No hay gorras de color ${colorBusquedaImagen} en el catálogo.`
+                  : 'No encontramos esa gorra en el catálogo.'
+                : 'No hay modelos con esta selección.'}</h3>
+              <p>{coincidenciasImagen !== null ? 'Prueba con otra foto clara o explora todos los modelos.' : 'Prueba otra opción o limpia los filtros para ver más productos.'}</p>
               <button type="button" className="limpiar-filtros" onClick={limpiarFiltros}>Ver todos los modelos</button>
             </div>
           )}
