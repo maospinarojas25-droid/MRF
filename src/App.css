@@ -1619,6 +1619,26 @@ body { font-size:16px; }
   box-shadow: 0 12px 28px rgb(37 211 102 / 24%);
 }
 .detalle-informacion .producto-whatsapp span { color: #102316; font-size: 19px; }
+.detalle-informacion .detalle-instagram {
+  width: min(100%, 460px);
+  min-height: 58px;
+  margin-top: 10px;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #655b50;
+  border-radius: 10px;
+  background: #22211e;
+  color: var(--crema);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color .2s ease, background .2s ease, color .2s ease;
+}
+.detalle-informacion .detalle-instagram span { color: var(--naranja); font-size: 19px; }
+.detalle-informacion .detalle-instagram:hover { border-color: var(--naranja); background: #2b2723; }
 
 @media (max-width: 800px) {
   .opcion-principal { min-height: 220px; }
@@ -1648,6 +1668,7 @@ body { font-size:16px; }
   .detalle-datos div { padding: 14px 0; font-size: 15px; }
   .detalle-caracteristicas { font-size: 15px; }
   .detalle-informacion .producto-whatsapp { width: 100%; min-height: 58px; font-size: 15px; }
+  .detalle-informacion .detalle-instagram { width: 100%; min-height: 58px; font-size: 15px; }
 }
 
 /* Portada corregida: composición dividida y fotografía completa en su panel */

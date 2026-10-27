@@ -99,7 +99,7 @@ function ProductDetailPage() {
               <div><dt>Disponibilidad</dt><dd>{estadoStock}</dd></div>
               <div><dt>Color</dt><dd>{producto.color}</dd></div>
               {producto.tipo === 'Disponible' && producto.talla && <div><dt>Talla</dt><dd>{producto.talla}</dd></div>}
-              {producto.estiloVisera && <div><dt>Visera</dt><dd>{producto.estiloVisera.toLowerCase()}</dd></div>}
+              {producto.estiloVisera && <div><dt>Visera</dt><dd>{producto.estiloVisera.charAt(0).toUpperCase() + producto.estiloVisera.slice(1).toLowerCase()}</dd></div>}
             </dl>
             <p className={producto.tipo === 'Disponible' ? 'detalle-aviso-stock' : 'detalle-aviso-catalogo'}>
               {producto.tipo === 'Disponible'
@@ -117,6 +117,9 @@ function ProductDetailPage() {
               </ul>
             )}
             <WhatsAppButton producto={producto} />
+            <a className="detalle-instagram" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
+              Consultar por Instagram <span aria-hidden="true">↗︎</span>
+            </a>
           </section>
         </div>
         {guiaTallasAbierta && (
