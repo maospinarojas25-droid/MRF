@@ -108,7 +108,11 @@ function crearFirmaVisual(bitmap) {
   const hash = coeficientes.slice(1).map((valor) => valor >= mediana)
   const totalColor = [...histogramaColor.values()].reduce((suma, cantidad) => suma + cantidad, 0) || 1
   const color = new Map([...histogramaColor].map(([familia, cantidad]) => [familia, cantidad / totalColor]))
-  return { hash, color }
+  const coloresVivos = [...color]
+    .filter(([familia]) => !['negro', 'blanco', 'gris'].includes(familia))
+    .sort((a, b) => b[1] - a[1])
+  const colorPrincipal = coloresVivos[0]?.[1] >= 0.12 ? coloresVivos[0][0] : ''
+  return { hash, color, colorPrincipal }
 }
 
 async function crearFirmaImagen(archivo) {
@@ -139,7 +143,8 @@ function similitudVisual(firmaA, firmaB) {
   const similitudHash = 1 - diferencias / firmaA.hash.length
   const similitudColor = [...new Set([...firmaA.color.keys(), ...firmaB.color.keys()])]
     .reduce((suma, familia) => suma + Math.min(firmaA.color.get(familia) || 0, firmaB.color.get(familia) || 0), 0)
-  return similitudHash * 0.88 + similitudColor * 0.12
+  // Da más peso al color; la composición visual ayuda a ordenar candidatas parecidas.
+  return similitudHash * 0.45 + similitudColor * 0.55
 }
 
 const guias = {
@@ -174,6 +179,8 @@ function Catalog() {
   const [tallaElegida, setTallaElegida] = useState(catalogoInicial.tallaElegida || '')
   const [estiloViseraElegido, setEstiloViseraElegido] = useState(catalogoInicial.estiloViseraElegido || '')
   const [coincidenciasImagen, setCoincidenciasImagen] = useState(catalogoInicial.coincidenciasImagen ?? null)
+  const [busquedaImagenPorColor, setBusquedaImagenPorColor] = useState(Boolean(catalogoInicial.busquedaImagenPorColor))
+  const [colorBusquedaImagen, setColorBusquedaImagen] = useState(catalogoInicial.colorBusquedaImagen || '')
   const [imagenVistaPrevia, setImagenVistaPrevia] = useState('')
   const [errorBusquedaImagen, setErrorBusquedaImagen] = useState('')
   const [analizandoImagen, setAnalizandoImagen] = useState(false)
@@ -337,6 +344,7 @@ function Catalog() {
     try {
       const firmaConsulta = await crearFirmaImagen(archivo)
       if (solicitudImagen !== solicitudImagenRef.current) return
+      setColorBusquedaImagen(firmaConsulta.colorPrincipal)
       const productosConImagen = productosColeccion.filter((producto) => producto.imagen)
       const resultados = await Promise.all(productosConImagen.map(async (producto) => {
         try {
@@ -361,11 +369,20 @@ function Catalog() {
           : 'No encontramos gorras con foto para comparar en esta selección.')
         return
       }
-      const mejorSimilitud = comparables[0]?.similitud || 0
-      const coincidencias = mejorSimilitud >= 0.88
-        ? comparables.filter((resultado) => resultado.similitud >= 0.88 && mejorSimilitud - resultado.similitud <= 0.025).map((resultado) => resultado.id)
+      const colorDetectado = firmaConsulta.colorPrincipal
+      const comparablesMismoColor = colorDetectado
+        ? comparables.filter((resultado) => {
+            const producto = productosConImagen.find((candidato) => candidato.id === resultado.id)
+            return familiaDeColor(producto?.color || '')?.clave === colorDetectado
+          })
+        : []
+      const candidatos = colorDetectado ? comparablesMismoColor : comparables
+      const mejorSimilitud = candidatos[0]?.similitud || 0
+      const coincidencias = mejorSimilitud >= 0.38
+        ? candidatos.filter((resultado) => mejorSimilitud - resultado.similitud <= 0.07).map((resultado) => resultado.id)
         : []
       setCoincidenciasImagen(coincidencias)
+      setBusquedaImagenPorColor(Boolean(coincidencias.length && comparablesMismoColor.length && mejorSimilitud < 0.66))
       if (!coincidencias.length) setErrorBusquedaImagen('No encontramos esa gorra en el catálogo. Prueba con otra foto o explora todos los modelos.')
     } catch {
       if (solicitudImagen !== solicitudImagenRef.current) return
@@ -379,6 +396,8 @@ function Catalog() {
   function quitarBusquedaImagen() {
     solicitudImagenRef.current += 1
     setCoincidenciasImagen(null)
+    setBusquedaImagenPorColor(false)
+    setColorBusquedaImagen('')
     setAnalizandoImagen(false)
     if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
     imagenVistaPreviaUrl.current = ''
@@ -567,29 +586,31 @@ function Catalog() {
           </div>
 
           <div className="filtros-catalogo">
-            <input
-              type="search"
-              value={busqueda}
-              onChange={(evento) => {
-                setBusqueda(evento.target.value)
-                if (evento.target.value) quitarBusquedaImagen()
-              }}
-              placeholder={modoVista === 'accesorios' ? 'Búsqueda' : 'Buscar por gorra, color o equipo'}
-              aria-label={modoVista === 'accesorios' ? 'Búsqueda de accesorios' : 'Buscar gorras por nombre, color o equipo'}
-            />
-            {modoVista !== 'accesorios' && <label className="buscar-imagen-boton">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.4-2h7.2l1.4 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-              <span>Buscar por imagen</span>
+            <div className="busqueda-catalogo-campo">
               <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                aria-label="Subir imagen de una gorra para encontrar el mismo modelo"
+                type="search"
+                value={busqueda}
                 onChange={(evento) => {
-                  buscarPorImagen(evento.target.files?.[0])
-                  evento.target.value = ''
+                  setBusqueda(evento.target.value)
+                  if (evento.target.value) quitarBusquedaImagen()
                 }}
+                placeholder={modoVista === 'accesorios' ? 'Búsqueda' : 'Buscar por gorra, color o equipo'}
+                aria-label={modoVista === 'accesorios' ? 'Búsqueda de accesorios' : 'Buscar gorras por nombre, color o equipo'}
               />
-            </label>}
+              {modoVista !== 'accesorios' && <label className="buscar-imagen-boton" title="Buscar gorra por imagen">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.4-2h7.2l1.4 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                <span className="sr-only">Buscar por imagen</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-label="Subir imagen de una gorra para encontrar el mismo modelo"
+                  onChange={(evento) => {
+                    buscarPorImagen(evento.target.files?.[0])
+                    evento.target.value = ''
+                  }}
+                />
+              </label>}
+            </div>
             {modoVista !== 'accesorios' && (
               <>
                 <div className="filtro-catalogo-con-limpiar">
@@ -628,7 +649,9 @@ function Catalog() {
             <p>{errorBusquedaImagen || (analizandoImagen
               ? `Comparando la foto con ${productosColeccion.filter((producto) => producto.imagen).length} gorras del catálogo…`
               : coincidenciasImagen?.length
-                ? coincidenciasImagen.length === 1 ? 'Encontramos esta gorra en el catálogo.' : `Encontramos ${coincidenciasImagen.length} imágenes prácticamente iguales.`
+                ? busquedaImagenPorColor
+                  ? `Encontramos gorras ${familiasColorCatalogo.find((familia) => familia.clave === colorBusquedaImagen)?.nombre?.toLowerCase() || 'del mismo color'}. Revisa las letras del frente.`
+                  : coincidenciasImagen.length === 1 ? 'Encontramos esta gorra en el catálogo.' : `Encontramos ${coincidenciasImagen.length} gorras parecidas. Revisa el color y las letras del frente.`
                 : 'La foto se compara en este dispositivo; no se sube al catálogo.')}</p>
             <button type="button" onClick={quitarBusquedaImagen} aria-label="Quitar imagen de búsqueda">×</button>
           </div>}
@@ -649,6 +672,8 @@ function Catalog() {
                     tallaElegida,
                     estiloViseraElegido,
                     coincidenciasImagen,
+                    busquedaImagenPorColor,
+                    colorBusquedaImagen,
                   }}
                 />
               ))}
