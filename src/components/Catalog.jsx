@@ -68,14 +68,115 @@ const cosenosHashImagen = Array.from({ length: 8 }, (_, frecuencia) =>
   Array.from({ length: 32 }, (_, posicion) => Math.cos(((2 * posicion + 1) * frecuencia * Math.PI) / 64))
 )
 
+function encontrarRegionFoto(bitmap) {
+  const ladoAnalisis = 96
+  const lienzo = document.createElement('canvas')
+  lienzo.width = ladoAnalisis
+  lienzo.height = ladoAnalisis
+  const contexto = lienzo.getContext('2d', { willReadFrequently: true })
+  if (!contexto) return null
+  const escala = Math.min(ladoAnalisis / bitmap.width, ladoAnalisis / bitmap.height)
+  const ancho = Math.round(bitmap.width * escala)
+  const alto = Math.round(bitmap.height * escala)
+  const desplazamientoX = Math.floor((ladoAnalisis - ancho) / 2)
+  const desplazamientoY = Math.floor((ladoAnalisis - alto) / 2)
+  contexto.drawImage(bitmap, desplazamientoX, desplazamientoY, ancho, alto)
+
+  const pixeles = contexto.getImageData(0, 0, ladoAnalisis, ladoAnalisis).data
+  const fondoClaro = new Uint8Array(ladoAnalisis * ladoAnalisis)
+  for (let i = 0; i < fondoClaro.length; i += 1) {
+    const indice = i * 4
+    const r = pixeles[indice]
+    const g = pixeles[indice + 1]
+    const b = pixeles[indice + 2]
+    if (Math.min(r, g, b) > 225 && Math.max(r, g, b) - Math.min(r, g, b) < 32) fondoClaro[i] = 1
+  }
+
+  const visitados = new Uint8Array(fondoClaro.length)
+  const cola = new Int32Array(fondoClaro.length)
+  let mejorRegion = null
+  for (let inicio = 0; inicio < fondoClaro.length; inicio += 1) {
+    if (!fondoClaro[inicio] || visitados[inicio]) continue
+    let cabeza = 0
+    let colaFinal = 0
+    let minX = ladoAnalisis
+    let minY = ladoAnalisis
+    let maxX = 0
+    let maxY = 0
+    cola[colaFinal++] = inicio
+    visitados[inicio] = 1
+    while (cabeza < colaFinal) {
+      const posicion = cola[cabeza++]
+      const x = posicion % ladoAnalisis
+      const y = Math.floor(posicion / ladoAnalisis)
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+      const vecinos = [x > 0 ? posicion - 1 : -1, x < ladoAnalisis - 1 ? posicion + 1 : -1, y > 0 ? posicion - ladoAnalisis : -1, y < ladoAnalisis - 1 ? posicion + ladoAnalisis : -1]
+      vecinos.forEach((vecino) => {
+        if (vecino >= 0 && fondoClaro[vecino] && !visitados[vecino]) {
+          visitados[vecino] = 1
+          cola[colaFinal++] = vecino
+        }
+      })
+    }
+    const regionAncho = maxX - minX + 1
+    const regionAlto = maxY - minY + 1
+    if (colaFinal < 45 || regionAncho < 14 || regionAlto < 12) continue
+    if (!mejorRegion || colaFinal > mejorRegion.pixeles) mejorRegion = { minX, minY, maxX, maxY, pixeles: colaFinal }
+  }
+  if (!mejorRegion) return null
+
+  const margenX = Math.max(2, Math.round((mejorRegion.maxX - mejorRegion.minX) * 0.06))
+  const margenY = Math.max(2, Math.round((mejorRegion.maxY - mejorRegion.minY) * 0.06))
+  const x = Math.max(desplazamientoX, mejorRegion.minX - margenX)
+  const y = Math.max(desplazamientoY, mejorRegion.minY - margenY)
+  const derecha = Math.min(desplazamientoX + ancho, mejorRegion.maxX + margenX + 1)
+  const abajo = Math.min(desplazamientoY + alto, mejorRegion.maxY + margenY + 1)
+  return {
+    x: (x - desplazamientoX) / escala,
+    y: (y - desplazamientoY) / escala,
+    ancho: (derecha - x) / escala,
+    alto: (abajo - y) / escala,
+  }
+}
+
+function crearHashPerceptual(grises) {
+  const coeficientes = []
+  for (let vertical = 0; vertical < 8; vertical += 1) {
+    for (let horizontal = 0; horizontal < 8; horizontal += 1) {
+      let total = 0
+      for (let y = 0; y < 32; y += 1) {
+        for (let x = 0; x < 32; x += 1) {
+          total += grises[y * 32 + x] * cosenosHashImagen[vertical][y] * cosenosHashImagen[horizontal][x]
+        }
+      }
+      coeficientes.push(total)
+    }
+  }
+  const valoresHash = coeficientes.slice(1).sort((a, b) => a - b)
+  const mediana = valoresHash[Math.floor(valoresHash.length / 2)]
+  return coeficientes.slice(1).map((valor) => valor >= mediana)
+}
+
 function crearFirmaVisual(bitmap) {
-  const lado = Math.min(bitmap.width, bitmap.height)
+  const regionFoto = encontrarRegionFoto(bitmap)
+  const region = regionFoto || {
+    x: (bitmap.width - Math.min(bitmap.width, bitmap.height)) / 2,
+    y: (bitmap.height - Math.min(bitmap.width, bitmap.height)) / 2,
+    ancho: Math.min(bitmap.width, bitmap.height),
+    alto: Math.min(bitmap.width, bitmap.height),
+  }
+  const lado = Math.min(region.ancho, region.alto)
+  const origenX = region.x + (region.ancho - lado) / 2
+  const origenY = region.y + (region.alto - lado) / 2
   const lienzo = document.createElement('canvas')
   lienzo.width = 32
   lienzo.height = 32
   const contexto = lienzo.getContext('2d', { willReadFrequently: true })
   if (!contexto) throw new Error('No se pudo analizar la imagen en este dispositivo.')
-  contexto.drawImage(bitmap, (bitmap.width - lado) / 2, (bitmap.height - lado) / 2, lado, lado, 0, 0, 32, 32)
+  contexto.drawImage(bitmap, origenX, origenY, lado, lado, 0, 0, 32, 32)
 
   const datos = contexto.getImageData(0, 0, 32, 32).data
   const grises = new Float64Array(32 * 32)
@@ -94,22 +195,20 @@ function crearFirmaVisual(bitmap) {
     }
   }
 
-  const coeficientes = []
-  for (let vertical = 0; vertical < 8; vertical += 1) {
-    for (let horizontal = 0; horizontal < 8; horizontal += 1) {
-      let total = 0
-      for (let y = 0; y < 32; y += 1) {
-        for (let x = 0; x < 32; x += 1) {
-          total += grises[y * 32 + x] * cosenosHashImagen[vertical][y] * cosenosHashImagen[horizontal][x]
-        }
-      }
-      coeficientes.push(total)
-    }
+  const hash = crearHashPerceptual(grises)
+  const lienzoFrontal = document.createElement('canvas')
+  lienzoFrontal.width = 32
+  lienzoFrontal.height = 32
+  const contextoFrontal = lienzoFrontal.getContext('2d', { willReadFrequently: true })
+  if (!contextoFrontal) throw new Error('No se pudo analizar el frente de la gorra.')
+  contextoFrontal.drawImage(lienzo, 6, 8, 20, 20, 0, 0, 32, 32)
+  const datosFrontales = contextoFrontal.getImageData(0, 0, 32, 32).data
+  const grisesFrontales = new Float64Array(32 * 32)
+  for (let pixel = 0; pixel < grisesFrontales.length; pixel += 1) {
+    const indice = pixel * 4
+    grisesFrontales[pixel] = datosFrontales[indice] * 0.299 + datosFrontales[indice + 1] * 0.587 + datosFrontales[indice + 2] * 0.114
   }
-
-  const valoresHash = coeficientes.slice(1).sort((a, b) => a - b)
-  const mediana = valoresHash[Math.floor(valoresHash.length / 2)]
-  const hash = coeficientes.slice(1).map((valor) => valor >= mediana)
+  const hashFrontal = crearHashPerceptual(grisesFrontales)
   const totalColorVivo = [...histogramaColor.values()].reduce((suma, cantidad) => suma + cantidad, 0)
   const totalNeutro = [...histogramaNeutros.values()].reduce((suma, cantidad) => suma + cantidad, 0) || 1
   const color = totalColorVivo
@@ -117,7 +216,7 @@ function crearFirmaVisual(bitmap) {
     : new Map([...histogramaNeutros].map(([familia, cantidad]) => [familia, cantidad / totalNeutro]))
   const coloresVivos = [...color].sort((a, b) => b[1] - a[1])
   const colorPrincipal = totalColorVivo / grises.length >= 0.05 ? coloresVivos[0]?.[0] || '' : ''
-  return { hash, color, colorPrincipal }
+  return { hash, hashFrontal, color, colorPrincipal }
 }
 
 async function crearFirmaImagen(archivo) {
@@ -141,15 +240,18 @@ async function crearFirmaImagenRemota(url) {
 }
 
 function similitudVisual(firmaA, firmaB) {
-  let diferencias = 0
-  firmaA.hash.forEach((bit, indice) => {
-    if (bit !== firmaB.hash[indice]) diferencias += 1
-  })
-  const similitudHash = 1 - diferencias / firmaA.hash.length
+  const compararHash = (hashA, hashB) => {
+    let diferencias = 0
+    hashA.forEach((bit, indice) => {
+      if (bit !== hashB[indice]) diferencias += 1
+    })
+    return 1 - diferencias / hashA.length
+  }
+  const similitudHash = compararHash(firmaA.hash, firmaB.hash) * 0.3 + compararHash(firmaA.hashFrontal, firmaB.hashFrontal) * 0.7
   const similitudColor = [...new Set([...firmaA.color.keys(), ...firmaB.color.keys()])]
     .reduce((suma, familia) => suma + Math.min(firmaA.color.get(familia) || 0, firmaB.color.get(familia) || 0), 0)
   // Da más peso al color; la composición visual ayuda a ordenar candidatas parecidas.
-  return similitudHash * 0.45 + similitudColor * 0.55
+  return similitudHash * 0.55 + similitudColor * 0.45
 }
 
 const guias = {
@@ -184,7 +286,6 @@ function Catalog() {
   const [tallaElegida, setTallaElegida] = useState(catalogoInicial.tallaElegida || '')
   const [estiloViseraElegido, setEstiloViseraElegido] = useState(catalogoInicial.estiloViseraElegido || '')
   const [coincidenciasImagen, setCoincidenciasImagen] = useState(catalogoInicial.coincidenciasImagen ?? null)
-  const [busquedaImagenPorColor, setBusquedaImagenPorColor] = useState(Boolean(catalogoInicial.busquedaImagenPorColor))
   const [colorBusquedaImagen, setColorBusquedaImagen] = useState(catalogoInicial.colorBusquedaImagen || '')
   const [imagenVistaPrevia, setImagenVistaPrevia] = useState('')
   const [errorBusquedaImagen, setErrorBusquedaImagen] = useState('')
@@ -383,12 +484,10 @@ function Catalog() {
         : []
       const candidatos = colorDetectado ? comparablesMismoColor : comparables
       const mejorSimilitud = candidatos[0]?.similitud || 0
-      const coincidencias = mejorSimilitud >= 0.38
-        ? candidatos.filter((resultado) => mejorSimilitud - resultado.similitud <= 0.07).map((resultado) => resultado.id)
-        : []
+      // Devuelve solo la mejor opción y exige un parecido mínimo; nunca llena la lista con alternativas débiles.
+      const coincidencias = mejorSimilitud >= 0.64 ? [candidatos[0].id] : []
       setCoincidenciasImagen(coincidencias)
-      setBusquedaImagenPorColor(Boolean(coincidencias.length && comparablesMismoColor.length))
-      if (!coincidencias.length) setErrorBusquedaImagen('No encontramos esa gorra en el catálogo. Prueba con otra foto o explora todos los modelos.')
+      if (!coincidencias.length) setErrorBusquedaImagen('No encontramos una coincidencia suficientemente precisa. Prueba con una foto directa de la gorra, sin marco ni captura de pantalla.')
     } catch {
       if (solicitudImagen !== solicitudImagenRef.current) return
       setCoincidenciasImagen([])
@@ -401,7 +500,6 @@ function Catalog() {
   function quitarBusquedaImagen() {
     solicitudImagenRef.current += 1
     setCoincidenciasImagen(null)
-    setBusquedaImagenPorColor(false)
     setColorBusquedaImagen('')
     setAnalizandoImagen(false)
     if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
@@ -654,9 +752,7 @@ function Catalog() {
             <p>{errorBusquedaImagen || (analizandoImagen
               ? `Comparando la foto con ${productosColeccion.filter((producto) => producto.imagen).length} gorras del catálogo…`
               : coincidenciasImagen?.length
-                ? busquedaImagenPorColor
-                  ? `Gorras parecidas de color ${colorBusquedaImagen}. Revisa el bordado del frente.`
-                  : coincidenciasImagen.length === 1 ? 'Encontramos esta gorra en el catálogo.' : `Encontramos ${coincidenciasImagen.length} gorras parecidas. Revisa el color y las letras del frente.`
+                ? 'Encontramos la coincidencia más cercana. Verifica el color y el bordado del frente.'
                 : 'La foto se compara en este dispositivo; no se sube al catálogo.')}</p>
             <button type="button" onClick={quitarBusquedaImagen} aria-label="Quitar imagen de búsqueda">×</button>
           </div>}
@@ -677,7 +773,6 @@ function Catalog() {
                     tallaElegida,
                     estiloViseraElegido,
                     coincidenciasImagen,
-                    busquedaImagenPorColor,
                     colorBusquedaImagen,
                   }}
                 />
