@@ -248,6 +248,19 @@ function crearFirmaVisual(bitmap) {
     grisesFrontales[pixel] = datosFrontales[indice] * 0.299 + datosFrontales[indice + 1] * 0.587 + datosFrontales[indice + 2] * 0.114
   }
   const hashFrontal = crearHashPerceptual(grisesFrontales)
+  const lienzoLogo = document.createElement('canvas')
+  lienzoLogo.width = 32
+  lienzoLogo.height = 32
+  const contextoLogo = lienzoLogo.getContext('2d', { willReadFrequently: true })
+  if (!contextoLogo) throw new Error('No se pudo analizar el bordado frontal.')
+  contextoLogo.drawImage(lienzo, 8, 13, 16, 12, 0, 0, 32, 32)
+  const datosLogo = contextoLogo.getImageData(0, 0, 32, 32).data
+  const grisesLogo = new Float64Array(32 * 32)
+  for (let pixel = 0; pixel < grisesLogo.length; pixel += 1) {
+    const indice = pixel * 4
+    grisesLogo[pixel] = datosLogo[indice] * 0.299 + datosLogo[indice + 1] * 0.587 + datosLogo[indice + 2] * 0.114
+  }
+  const hashLogo = crearHashPerceptual(grisesLogo)
   const totalColorVivo = [...histogramaColor.values()].reduce((suma, cantidad) => suma + cantidad, 0)
   const totalNeutro = [...histogramaNeutros.values()].reduce((suma, cantidad) => suma + cantidad, 0) || 1
   const color = totalColorVivo
@@ -255,7 +268,7 @@ function crearFirmaVisual(bitmap) {
     : new Map([...histogramaNeutros].map(([familia, cantidad]) => [familia, cantidad / totalNeutro]))
   const coloresVivos = [...color].sort((a, b) => b[1] - a[1])
   const colorPrincipal = totalColorVivo / grises.length >= 0.05 ? coloresVivos[0]?.[0] || '' : ''
-  return { hash, hashFrontal, color, colorPrincipal }
+  return { hash, hashFrontal, hashLogo, color, colorPrincipal }
 }
 
 async function crearFirmaImagen(archivo) {
@@ -286,7 +299,9 @@ function similitudVisual(firmaA, firmaB) {
     })
     return 1 - diferencias / hashA.length
   }
-  const similitudHash = compararHash(firmaA.hash, firmaB.hash) * 0.3 + compararHash(firmaA.hashFrontal, firmaB.hashFrontal) * 0.7
+  const similitudHash = compararHash(firmaA.hash, firmaB.hash) * 0.15
+    + compararHash(firmaA.hashFrontal, firmaB.hashFrontal) * 0.25
+    + compararHash(firmaA.hashLogo, firmaB.hashLogo) * 0.6
   const similitudColor = [...new Set([...firmaA.color.keys(), ...firmaB.color.keys()])]
     .reduce((suma, familia) => suma + Math.min(firmaA.color.get(familia) || 0, firmaB.color.get(familia) || 0), 0)
   // Da más peso al color; la composición visual ayuda a ordenar candidatas parecidas.
