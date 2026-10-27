@@ -80,6 +80,7 @@ function crearFirmaVisual(bitmap) {
   const datos = contexto.getImageData(0, 0, 32, 32).data
   const grises = new Float64Array(32 * 32)
   const histogramaColor = new Map()
+  const histogramaNeutros = new Map()
   for (let pixel = 0; pixel < grises.length; pixel += 1) {
     const indice = pixel * 4
     const r = datos[indice]
@@ -87,7 +88,10 @@ function crearFirmaVisual(bitmap) {
     const b = datos[indice + 2]
     grises[pixel] = r * 0.299 + g * 0.587 + b * 0.114
     const familia = clasificarPixel(r, g, b)
-    if (familia) histogramaColor.set(familia, (histogramaColor.get(familia) || 0) + 1)
+    if (familia) {
+      const histograma = ['negro', 'blanco', 'gris'].includes(familia) ? histogramaNeutros : histogramaColor
+      histograma.set(familia, (histograma.get(familia) || 0) + 1)
+    }
   }
 
   const coeficientes = []
@@ -106,12 +110,13 @@ function crearFirmaVisual(bitmap) {
   const valoresHash = coeficientes.slice(1).sort((a, b) => a - b)
   const mediana = valoresHash[Math.floor(valoresHash.length / 2)]
   const hash = coeficientes.slice(1).map((valor) => valor >= mediana)
-  const totalColor = [...histogramaColor.values()].reduce((suma, cantidad) => suma + cantidad, 0) || 1
-  const color = new Map([...histogramaColor].map(([familia, cantidad]) => [familia, cantidad / totalColor]))
-  const coloresVivos = [...color]
-    .filter(([familia]) => !['negro', 'blanco', 'gris'].includes(familia))
-    .sort((a, b) => b[1] - a[1])
-  const colorPrincipal = coloresVivos[0]?.[1] >= 0.12 ? coloresVivos[0][0] : ''
+  const totalColorVivo = [...histogramaColor.values()].reduce((suma, cantidad) => suma + cantidad, 0)
+  const totalNeutro = [...histogramaNeutros.values()].reduce((suma, cantidad) => suma + cantidad, 0) || 1
+  const color = totalColorVivo
+    ? new Map([...histogramaColor].map(([familia, cantidad]) => [familia, cantidad / totalColorVivo]))
+    : new Map([...histogramaNeutros].map(([familia, cantidad]) => [familia, cantidad / totalNeutro]))
+  const coloresVivos = [...color].sort((a, b) => b[1] - a[1])
+  const colorPrincipal = totalColorVivo / grises.length >= 0.05 ? coloresVivos[0]?.[0] || '' : ''
   return { hash, color, colorPrincipal }
 }
 
