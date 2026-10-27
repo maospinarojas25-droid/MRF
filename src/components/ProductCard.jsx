@@ -24,7 +24,11 @@ function ProductCard({ producto, catalogoState }) {
 
       <div className="producto-info">
         {producto.categoria === 'Accesorio' && <span className="producto-categoria">ACCESORIO</span>}
-        <h3>{producto.nombre}</h3>
+        <h3>
+          <Link className="producto-titulo-link" to={'/producto/' + producto.id} state={estadoDetalle}>
+            {producto.nombre}
+          </Link>
+        </h3>
         <div className="producto-detalles">
           <span>{producto.color}</span>
           {producto.tipo === 'Disponible' && producto.talla && <span>Talla {producto.talla}</span>}
