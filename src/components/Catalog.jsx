@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { controlCatalogo as ajustesLocales, productosEjemplo } from '../data/products'
 import { cargarCatalogoPublico } from '../data/catalogApi'
@@ -42,6 +42,50 @@ function familiaDeColor(color = '') {
   return familiasColorCatalogo.find((familia) => familia.terminos.some((termino) => normalizado === termino || normalizado.startsWith(termino + ' ')))
 }
 
+function clasificarPixel(r, g, b) {
+  const maximo = Math.max(r, g, b)
+  const minimo = Math.min(r, g, b)
+  const brillo = (r + g + b) / 3
+  const saturacion = maximo === 0 ? 0 : (maximo - minimo) / maximo
+  if (brillo > 238 && saturacion < 0.18) return null
+  if (brillo < 58) return 'negro'
+  if (saturacion < 0.18) return brillo > 190 ? 'blanco' : brillo > 105 ? 'gris' : 'negro'
+
+  let tono
+  if (maximo === r) tono = ((g - b) / (maximo - minimo) + (g < b ? 6 : 0)) * 60
+  else if (maximo === g) tono = ((b - r) / (maximo - minimo) + 2) * 60
+  else tono = ((r - g) / (maximo - minimo) + 4) * 60
+
+  if (tono < 15 || tono >= 345) return brillo > 180 && saturacion < 0.45 ? 'rosado' : 'rojo'
+  if (tono < 42) return brillo > 175 ? 'crema' : brillo < 100 ? 'cafe' : 'amarillo'
+  if (tono < 70) return brillo > 185 ? 'crema' : 'amarillo'
+  if (tono < 165) return 'verde'
+  if (tono < 275) return 'azul'
+  return 'rosado'
+}
+
+async function detectarColoresImagen(archivo) {
+  const bitmap = await createImageBitmap(archivo)
+  const lado = Math.min(bitmap.width, bitmap.height)
+  const lienzo = document.createElement('canvas')
+  lienzo.width = 64
+  lienzo.height = 64
+  const contexto = lienzo.getContext('2d', { willReadFrequently: true })
+  contexto.drawImage(bitmap, (bitmap.width - lado) / 2, (bitmap.height - lado) / 2, lado, lado, 0, 0, 64, 64)
+  bitmap.close()
+
+  const pixeles = contexto.getImageData(8, 8, 48, 48).data
+  const conteo = new Map()
+  for (let indice = 0; indice < pixeles.length; indice += 16) {
+    const familia = clasificarPixel(pixeles[indice], pixeles[indice + 1], pixeles[indice + 2])
+    if (familia) conteo.set(familia, (conteo.get(familia) || 0) + 1)
+  }
+
+  const ordenados = [...conteo.entries()].sort((a, b) => b[1] - a[1])
+  if (!ordenados.length || ordenados[0][1] < 8) return []
+  return ordenados.filter(([, cantidad]) => cantidad >= ordenados[0][1] * 0.48).slice(0, 2).map(([familia]) => familia)
+}
+
 const guias = {
   tallas: {
     etiqueta: 'AJUSTE Y MEDIDAS',
@@ -73,6 +117,12 @@ function Catalog() {
   const [colorElegido, setColorElegido] = useState(catalogoInicial.colorElegido || '')
   const [tallaElegida, setTallaElegida] = useState(catalogoInicial.tallaElegida || '')
   const [estiloViseraElegido, setEstiloViseraElegido] = useState(catalogoInicial.estiloViseraElegido || '')
+  const [familiasImagen, setFamiliasImagen] = useState(catalogoInicial.familiasImagen || [])
+  const [imagenVistaPrevia, setImagenVistaPrevia] = useState('')
+  const [errorBusquedaImagen, setErrorBusquedaImagen] = useState('')
+  const [analizandoImagen, setAnalizandoImagen] = useState(false)
+  const imagenVistaPreviaUrl = useRef('')
+  const solicitudImagenRef = useRef(0)
   const [guiaAbierta, setGuiaAbierta] = useState(null)
 
   useEffect(() => {
@@ -87,6 +137,10 @@ function Catalog() {
         // Si todavía no se ejecutó el SQL de configuración, el catálogo conserva su vista de ejemplo.
       })
     return () => { activo = false }
+  }, [])
+
+  useEffect(() => () => {
+    if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
   }, [])
 
   const productosColeccion = useMemo(
@@ -135,16 +189,18 @@ function Catalog() {
     const textoProducto = normalizarTextoCatalogo(`${producto.nombre} ${producto.color} ${producto.ciudad}`)
     const familiaProducto = familiaDeColor(producto.color)
     const coincideBusqueda = textoProducto.includes(termino) || (familiaBusqueda && familiaProducto?.clave === familiaBusqueda.clave)
+    const coincideImagen = !familiasImagen.length || familiasImagen.includes(familiaProducto?.clave)
     const coincideColor = !colorElegido || (colorElegido.startsWith('familia:')
       ? familiaProducto?.clave === colorElegido.slice('familia:'.length)
       : normalizarTextoCatalogo(producto.color) === colorElegido.slice('color:'.length))
     const coincideTalla = !tallaElegida || producto.talla === tallaElegida
     const coincideVisera = !estiloViseraElegido || producto.estiloVisera === estiloViseraElegido
 
-    return tipoEstaVisible && coincideEstado && coincideBusqueda && coincideColor && coincideTalla && coincideVisera
+    return tipoEstaVisible && coincideEstado && coincideBusqueda && coincideImagen && coincideColor && coincideTalla && coincideVisera
   })
 
   function seleccionarTodas() {
+    quitarBusquedaImagen()
     setModoVista('todas')
     setColeccionElegida('')
     setEstadoElegido('Todos')
@@ -155,6 +211,7 @@ function Catalog() {
   }
 
   function seleccionarAccesorios() {
+    quitarBusquedaImagen()
     setModoVista('accesorios')
     setColeccionElegida('')
     setEstadoElegido('Todos')
@@ -165,6 +222,7 @@ function Catalog() {
   }
 
   function seleccionarEquipo(codigo) {
+    quitarBusquedaImagen()
     setModoVista('equipos')
     setColeccionElegida(codigo)
     setEstadoElegido('Todos')
@@ -175,6 +233,7 @@ function Catalog() {
   }
 
   function volverASeleccion() {
+    quitarBusquedaImagen()
     const volverAEquipos = modoVista === 'equipos'
     setModoVista('')
     setColeccionElegida('')
@@ -192,6 +251,57 @@ function Catalog() {
     setColorElegido('')
     setTallaElegida('')
     setEstiloViseraElegido('')
+    quitarBusquedaImagen()
+  }
+
+  async function buscarPorImagen(archivo) {
+    if (!archivo) return
+    quitarBusquedaImagen()
+    if (!archivo.type.startsWith('image/')) {
+      setErrorBusquedaImagen('Elige una imagen en formato JPG, PNG o WebP.')
+      return
+    }
+    if (archivo.size > 10 * 1024 * 1024) {
+      setErrorBusquedaImagen('La imagen debe pesar menos de 10 MB.')
+      return
+    }
+
+    const vistaPrevia = URL.createObjectURL(archivo)
+    if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
+    imagenVistaPreviaUrl.current = vistaPrevia
+    setImagenVistaPrevia(vistaPrevia)
+    setBusqueda('')
+    setColorElegido('')
+    setTallaElegida('')
+    setEstiloViseraElegido('')
+    const solicitudImagen = ++solicitudImagenRef.current
+    setAnalizandoImagen(true)
+    try {
+      const colores = await detectarColoresImagen(archivo)
+      if (solicitudImagen !== solicitudImagenRef.current) return
+      if (!colores.length) {
+        setFamiliasImagen([])
+        setErrorBusquedaImagen('No identificamos el color. Prueba con la gorra centrada y con buena luz.')
+        return
+      }
+      setFamiliasImagen(colores)
+    } catch {
+      if (solicitudImagen !== solicitudImagenRef.current) return
+      setFamiliasImagen([])
+      setErrorBusquedaImagen('No pudimos leer esa imagen. Prueba con otra foto.')
+    } finally {
+      if (solicitudImagen === solicitudImagenRef.current) setAnalizandoImagen(false)
+    }
+  }
+
+  function quitarBusquedaImagen() {
+    solicitudImagenRef.current += 1
+    setFamiliasImagen([])
+    setAnalizandoImagen(false)
+    if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
+    imagenVistaPreviaUrl.current = ''
+    setImagenVistaPrevia('')
+    setErrorBusquedaImagen('')
   }
 
   const guiaSeleccionada = guiaAbierta ? guias[guiaAbierta] : null
@@ -378,10 +488,26 @@ function Catalog() {
             <input
               type="search"
               value={busqueda}
-              onChange={(evento) => setBusqueda(evento.target.value)}
+              onChange={(evento) => {
+                setBusqueda(evento.target.value)
+                if (evento.target.value) quitarBusquedaImagen()
+              }}
               placeholder={modoVista === 'accesorios' ? 'Búsqueda' : 'Buscar por gorra, color o equipo'}
               aria-label={modoVista === 'accesorios' ? 'Búsqueda de accesorios' : 'Buscar gorras por nombre, color o equipo'}
             />
+            {modoVista !== 'accesorios' && <label className="buscar-imagen-boton">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.4-2h7.2l1.4 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+              <span>Buscar por imagen</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                aria-label="Subir imagen de una gorra para buscar por color"
+                onChange={(evento) => {
+                  buscarPorImagen(evento.target.files?.[0])
+                  evento.target.value = ''
+                }}
+              />
+            </label>}
             {modoVista !== 'accesorios' && (
               <>
                 <div className="filtro-catalogo-con-limpiar">
@@ -415,6 +541,14 @@ function Catalog() {
             {productosFiltrados.length} {productosFiltrados.length === 1 ? 'modelo' : 'modelos'}
           </p>
 
+          {(familiasImagen.length > 0 || imagenVistaPrevia || errorBusquedaImagen) && <div className="busqueda-imagen-estado" aria-live="polite">
+            {imagenVistaPrevia && <img src={imagenVistaPrevia} alt="Vista previa de la imagen elegida" />}
+            <p>{errorBusquedaImagen || (analizandoImagen
+              ? 'Analizando los colores de la imagen…'
+              : `Buscando gorras de color ${familiasImagen.map((familia) => familiasColorCatalogo.find((item) => item.clave === familia)?.nombre).filter(Boolean).join(' y ')}. La foto se analiza en este dispositivo.`)}</p>
+            <button type="button" onClick={quitarBusquedaImagen} aria-label="Quitar imagen de búsqueda">×</button>
+          </div>}
+
           {productosFiltrados.length ? (
             <div className="productos-grid">
               {productosFiltrados.map((producto) => (
@@ -430,6 +564,7 @@ function Catalog() {
                     colorElegido,
                     tallaElegida,
                     estiloViseraElegido,
+                    familiasImagen,
                   }}
                 />
               ))}
