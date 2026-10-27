@@ -2195,60 +2195,10 @@ body { font-size:16px; }
 }
 
 .catalogo-mrf .busqueda-catalogo-campo { min-width:220px; flex:1 1 300px; position:relative; display:flex; align-items:center; }
-.catalogo-mrf .busqueda-catalogo-campo > input[type="search"] { width:100%; min-width:0; flex:1 1 auto; padding-right:56px; }
-.catalogo-mrf .buscar-imagen-boton {
-  width:40px;
-  height:40px;
-  padding:0;
-  position:absolute;
-  right:5px;
-  top:50%;
-  transform:translateY(-50%);
-  display:grid;
-  place-items:center;
-  border:0;
-  border-radius:7px;
-  background:transparent;
-  color:#292824;
-  cursor:pointer;
-  transition:background .2s ease, color .2s ease;
-}
-.catalogo-mrf .buscar-imagen-boton:hover { background:#f3e3d8; color:#b74b23; }
-.catalogo-mrf .buscar-imagen-boton:focus-within { outline:2px solid #f26b38; outline-offset:1px; }
-.catalogo-mrf .buscar-imagen-boton svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-.catalogo-mrf .buscar-imagen-boton input[type="file"] {
-  width:1px !important;
-  height:1px !important;
-  min-height:0 !important;
-  padding:0 !important;
-  position:absolute;
-  overflow:hidden;
-  clip:rect(0,0,0,0);
-  clip-path:inset(50%);
-  white-space:nowrap;
-  opacity:0;
-}
-.catalogo-mrf .buscar-imagen-boton .sr-only { width:1px; height:1px; padding:0; position:absolute; overflow:hidden; clip:rect(0,0,0,0); clip-path:inset(50%); white-space:nowrap; border:0; }
-.catalogo-mrf .busqueda-imagen-estado {
-  min-height: 62px;
-  margin: 12px 0;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #d8d3ca;
-  background: #e8e4db;
-  color: #45413a;
-  font-size: 13px;
-}
-.catalogo-mrf .busqueda-imagen-estado img { width: 48px; height: 48px; flex: 0 0 auto; border-radius: 3px; object-fit: cover; }
-.catalogo-mrf .busqueda-imagen-estado p { flex: 1; margin: 0; }
-.catalogo-mrf .busqueda-imagen-estado button { width: 34px; height: 34px; border: 1px solid #c9c4ba; background: transparent; color: #292824; font-size: 23px; cursor: pointer; }
+.catalogo-mrf .busqueda-catalogo-campo > input[type="search"] { width:100%; min-width:0; flex:1 1 auto; }
 @media (max-width:650px) {
   .catalogo-mrf .busqueda-catalogo-campo { width:100%; min-width:0; flex:1 1 100%; }
   .catalogo-mrf .busqueda-catalogo-campo > input[type="search"] { width:100%; }
-  .catalogo-mrf .buscar-imagen-boton { width:40px; height:40px; }
-  .catalogo-mrf .busqueda-imagen-estado { font-size: 12px; }
 }
 
 /* Tres categorías principales y adaptación al ancho disponible */

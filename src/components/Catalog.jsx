@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router'
 import { controlCatalogo as ajustesLocales, productosEjemplo } from '../data/products'
 import { cargarCatalogoPublico } from '../data/catalogApi'
@@ -42,272 +42,6 @@ function familiaDeColor(color = '') {
   return familiasColorCatalogo.find((familia) => familia.terminos.some((termino) => normalizado === termino || normalizado.startsWith(termino + ' ')))
 }
 
-function clasificarPixel(r, g, b) {
-  const maximo = Math.max(r, g, b)
-  const minimo = Math.min(r, g, b)
-  const brillo = (r + g + b) / 3
-  const saturacion = maximo === 0 ? 0 : (maximo - minimo) / maximo
-  if (brillo > 238 && saturacion < 0.18) return null
-  if (brillo < 58) return 'negro'
-  if (saturacion < 0.18) return brillo > 190 ? 'blanco' : brillo > 105 ? 'gris' : 'negro'
-
-  let tono
-  if (maximo === r) tono = ((g - b) / (maximo - minimo) + (g < b ? 6 : 0)) * 60
-  else if (maximo === g) tono = ((b - r) / (maximo - minimo) + 2) * 60
-  else tono = ((r - g) / (maximo - minimo) + 4) * 60
-
-  if (tono < 15 || tono >= 345) return brillo > 180 && saturacion < 0.45 ? 'rosado' : 'rojo'
-  if (tono < 42) return brillo > 175 ? 'crema' : brillo < 100 ? 'cafe' : 'amarillo'
-  if (tono < 70) return brillo > 185 ? 'crema' : 'amarillo'
-  if (tono < 165) return 'verde'
-  if (tono < 275) return 'azul'
-  return 'rosado'
-}
-
-const cosenosHashImagen = Array.from({ length: 8 }, (_, frecuencia) =>
-  Array.from({ length: 32 }, (_, posicion) => Math.cos(((2 * posicion + 1) * frecuencia * Math.PI) / 64))
-)
-
-function encontrarRegionFoto(bitmap) {
-  const ladoAnalisis = 96
-  const lienzo = document.createElement('canvas')
-  lienzo.width = ladoAnalisis
-  lienzo.height = ladoAnalisis
-  const contexto = lienzo.getContext('2d', { willReadFrequently: true })
-  if (!contexto) return null
-  const escala = Math.min(ladoAnalisis / bitmap.width, ladoAnalisis / bitmap.height)
-  const ancho = Math.round(bitmap.width * escala)
-  const alto = Math.round(bitmap.height * escala)
-  const desplazamientoX = Math.floor((ladoAnalisis - ancho) / 2)
-  const desplazamientoY = Math.floor((ladoAnalisis - alto) / 2)
-  contexto.drawImage(bitmap, desplazamientoX, desplazamientoY, ancho, alto)
-
-  const pixeles = contexto.getImageData(0, 0, ladoAnalisis, ladoAnalisis).data
-
-  // En capturas de Fotos/WhatsApp la foto suele quedar como una franja casi
-  // cuadrada entre barras negras. Detectar esa franja evita comparar el marco
-  // del teléfono en vez de la gorra.
-  const brilloFilas = Array.from({ length: ladoAnalisis }, (_, y) => {
-    let suma = 0
-    for (let x = desplazamientoX; x < desplazamientoX + ancho; x += 1) {
-      const indice = (y * ladoAnalisis + x) * 4
-      suma += pixeles[indice] * 0.299 + pixeles[indice + 1] * 0.587 + pixeles[indice + 2] * 0.114
-    }
-    return suma / ancho
-  })
-  let inicioFranja = -1
-  let mejorFranja = null
-  for (let y = 0; y <= ladoAnalisis; y += 1) {
-    const dentroDeFoto = y < ladoAnalisis && brilloFilas[y] > 66
-    if (dentroDeFoto && inicioFranja < 0) inicioFranja = y
-    if (!dentroDeFoto && inicioFranja >= 0) {
-      const finFranja = y - 1
-      const altoFranja = finFranja - inicioFranja + 1
-      const proporcion = ancho / altoFranja
-      const tieneBarrasOscuras = inicioFranja >= 3 && finFranja < ladoAnalisis - 3
-        && brilloFilas[inicioFranja - 1] < 48
-        && brilloFilas[finFranja + 1] < 48
-      if (tieneBarrasOscuras && altoFranja >= 12 && proporcion >= 0.65 && proporcion <= 1.4) {
-        if (!mejorFranja || altoFranja > mejorFranja.alto) mejorFranja = { inicio: inicioFranja, alto: altoFranja }
-      }
-      inicioFranja = -1
-    }
-  }
-  if (mejorFranja) {
-    return {
-      x: 0,
-      y: (mejorFranja.inicio - desplazamientoY) / escala,
-      ancho: bitmap.width,
-      alto: mejorFranja.alto / escala,
-    }
-  }
-
-  const fondoClaro = new Uint8Array(ladoAnalisis * ladoAnalisis)
-  for (let i = 0; i < fondoClaro.length; i += 1) {
-    const indice = i * 4
-    const r = pixeles[indice]
-    const g = pixeles[indice + 1]
-    const b = pixeles[indice + 2]
-    if (Math.min(r, g, b) > 225 && Math.max(r, g, b) - Math.min(r, g, b) < 32) fondoClaro[i] = 1
-  }
-
-  const visitados = new Uint8Array(fondoClaro.length)
-  const cola = new Int32Array(fondoClaro.length)
-  let mejorRegion = null
-  for (let inicio = 0; inicio < fondoClaro.length; inicio += 1) {
-    if (!fondoClaro[inicio] || visitados[inicio]) continue
-    let cabeza = 0
-    let colaFinal = 0
-    let minX = ladoAnalisis
-    let minY = ladoAnalisis
-    let maxX = 0
-    let maxY = 0
-    cola[colaFinal++] = inicio
-    visitados[inicio] = 1
-    while (cabeza < colaFinal) {
-      const posicion = cola[cabeza++]
-      const x = posicion % ladoAnalisis
-      const y = Math.floor(posicion / ladoAnalisis)
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x)
-      maxY = Math.max(maxY, y)
-      const vecinos = [x > 0 ? posicion - 1 : -1, x < ladoAnalisis - 1 ? posicion + 1 : -1, y > 0 ? posicion - ladoAnalisis : -1, y < ladoAnalisis - 1 ? posicion + ladoAnalisis : -1]
-      vecinos.forEach((vecino) => {
-        if (vecino >= 0 && fondoClaro[vecino] && !visitados[vecino]) {
-          visitados[vecino] = 1
-          cola[colaFinal++] = vecino
-        }
-      })
-    }
-    const regionAncho = maxX - minX + 1
-    const regionAlto = maxY - minY + 1
-    if (colaFinal < 45 || regionAncho < 14 || regionAlto < 12) continue
-    if (!mejorRegion || colaFinal > mejorRegion.pixeles) mejorRegion = { minX, minY, maxX, maxY, pixeles: colaFinal }
-  }
-  if (!mejorRegion) return null
-
-  const margenX = Math.max(2, Math.round((mejorRegion.maxX - mejorRegion.minX) * 0.06))
-  const margenY = Math.max(2, Math.round((mejorRegion.maxY - mejorRegion.minY) * 0.06))
-  const x = Math.max(desplazamientoX, mejorRegion.minX - margenX)
-  const y = Math.max(desplazamientoY, mejorRegion.minY - margenY)
-  const derecha = Math.min(desplazamientoX + ancho, mejorRegion.maxX + margenX + 1)
-  const abajo = Math.min(desplazamientoY + alto, mejorRegion.maxY + margenY + 1)
-  return {
-    x: (x - desplazamientoX) / escala,
-    y: (y - desplazamientoY) / escala,
-    ancho: (derecha - x) / escala,
-    alto: (abajo - y) / escala,
-  }
-}
-
-function crearHashPerceptual(grises) {
-  const coeficientes = []
-  for (let vertical = 0; vertical < 8; vertical += 1) {
-    for (let horizontal = 0; horizontal < 8; horizontal += 1) {
-      let total = 0
-      for (let y = 0; y < 32; y += 1) {
-        for (let x = 0; x < 32; x += 1) {
-          total += grises[y * 32 + x] * cosenosHashImagen[vertical][y] * cosenosHashImagen[horizontal][x]
-        }
-      }
-      coeficientes.push(total)
-    }
-  }
-  const valoresHash = coeficientes.slice(1).sort((a, b) => a - b)
-  const mediana = valoresHash[Math.floor(valoresHash.length / 2)]
-  return coeficientes.slice(1).map((valor) => valor >= mediana)
-}
-
-function crearFirmaVisual(bitmap) {
-  const regionFoto = encontrarRegionFoto(bitmap)
-  const region = regionFoto || {
-    x: (bitmap.width - Math.min(bitmap.width, bitmap.height)) / 2,
-    y: (bitmap.height - Math.min(bitmap.width, bitmap.height)) / 2,
-    ancho: Math.min(bitmap.width, bitmap.height),
-    alto: Math.min(bitmap.width, bitmap.height),
-  }
-  const lado = Math.min(region.ancho, region.alto)
-  const origenX = region.x + (region.ancho - lado) / 2
-  const origenY = region.y + (region.alto - lado) / 2
-  const lienzo = document.createElement('canvas')
-  lienzo.width = 32
-  lienzo.height = 32
-  const contexto = lienzo.getContext('2d', { willReadFrequently: true })
-  if (!contexto) throw new Error('No se pudo analizar la imagen en este dispositivo.')
-  contexto.drawImage(bitmap, origenX, origenY, lado, lado, 0, 0, 32, 32)
-
-  const datos = contexto.getImageData(0, 0, 32, 32).data
-  const grises = new Float64Array(32 * 32)
-  const histogramaColor = new Map()
-  const histogramaNeutros = new Map()
-  for (let pixel = 0; pixel < grises.length; pixel += 1) {
-    const indice = pixel * 4
-    const r = datos[indice]
-    const g = datos[indice + 1]
-    const b = datos[indice + 2]
-    grises[pixel] = r * 0.299 + g * 0.587 + b * 0.114
-    const familia = clasificarPixel(r, g, b)
-    if (familia) {
-      const histograma = ['negro', 'blanco', 'gris'].includes(familia) ? histogramaNeutros : histogramaColor
-      histograma.set(familia, (histograma.get(familia) || 0) + 1)
-    }
-  }
-
-  const hash = crearHashPerceptual(grises)
-  const lienzoFrontal = document.createElement('canvas')
-  lienzoFrontal.width = 32
-  lienzoFrontal.height = 32
-  const contextoFrontal = lienzoFrontal.getContext('2d', { willReadFrequently: true })
-  if (!contextoFrontal) throw new Error('No se pudo analizar el frente de la gorra.')
-  contextoFrontal.drawImage(lienzo, 6, 8, 20, 20, 0, 0, 32, 32)
-  const datosFrontales = contextoFrontal.getImageData(0, 0, 32, 32).data
-  const grisesFrontales = new Float64Array(32 * 32)
-  for (let pixel = 0; pixel < grisesFrontales.length; pixel += 1) {
-    const indice = pixel * 4
-    grisesFrontales[pixel] = datosFrontales[indice] * 0.299 + datosFrontales[indice + 1] * 0.587 + datosFrontales[indice + 2] * 0.114
-  }
-  const hashFrontal = crearHashPerceptual(grisesFrontales)
-  const lienzoLogo = document.createElement('canvas')
-  lienzoLogo.width = 32
-  lienzoLogo.height = 32
-  const contextoLogo = lienzoLogo.getContext('2d', { willReadFrequently: true })
-  if (!contextoLogo) throw new Error('No se pudo analizar el bordado frontal.')
-  contextoLogo.drawImage(lienzo, 8, 13, 16, 12, 0, 0, 32, 32)
-  const datosLogo = contextoLogo.getImageData(0, 0, 32, 32).data
-  const grisesLogo = new Float64Array(32 * 32)
-  for (let pixel = 0; pixel < grisesLogo.length; pixel += 1) {
-    const indice = pixel * 4
-    grisesLogo[pixel] = datosLogo[indice] * 0.299 + datosLogo[indice + 1] * 0.587 + datosLogo[indice + 2] * 0.114
-  }
-  const hashLogo = crearHashPerceptual(grisesLogo)
-  const totalColorVivo = [...histogramaColor.values()].reduce((suma, cantidad) => suma + cantidad, 0)
-  const totalNeutro = [...histogramaNeutros.values()].reduce((suma, cantidad) => suma + cantidad, 0) || 1
-  const color = totalColorVivo
-    ? new Map([...histogramaColor].map(([familia, cantidad]) => [familia, cantidad / totalColorVivo]))
-    : new Map([...histogramaNeutros].map(([familia, cantidad]) => [familia, cantidad / totalNeutro]))
-  const coloresVivos = [...color].sort((a, b) => b[1] - a[1])
-  const colorPrincipal = totalColorVivo / grises.length >= 0.05 ? coloresVivos[0]?.[0] || '' : ''
-  return { hash, hashFrontal, hashLogo, color, colorPrincipal }
-}
-
-async function crearFirmaImagen(archivo) {
-  const bitmap = await createImageBitmap(archivo)
-  try {
-    return crearFirmaVisual(bitmap)
-  } finally {
-    bitmap.close()
-  }
-}
-
-async function crearFirmaImagenRemota(url) {
-  const respuesta = await fetch(url, { mode: 'cors', cache: 'force-cache', credentials: 'omit' })
-  if (!respuesta.ok) throw new Error('No se pudo cargar una foto del catálogo.')
-  const bitmap = await createImageBitmap(await respuesta.blob())
-  try {
-    return crearFirmaVisual(bitmap)
-  } finally {
-    bitmap.close()
-  }
-}
-
-function similitudVisual(firmaA, firmaB) {
-  const compararHash = (hashA, hashB) => {
-    let diferencias = 0
-    hashA.forEach((bit, indice) => {
-      if (bit !== hashB[indice]) diferencias += 1
-    })
-    return 1 - diferencias / hashA.length
-  }
-  const similitudHash = compararHash(firmaA.hash, firmaB.hash) * 0.15
-    + compararHash(firmaA.hashFrontal, firmaB.hashFrontal) * 0.25
-    + compararHash(firmaA.hashLogo, firmaB.hashLogo) * 0.6
-  const similitudColor = [...new Set([...firmaA.color.keys(), ...firmaB.color.keys()])]
-    .reduce((suma, familia) => suma + Math.min(firmaA.color.get(familia) || 0, firmaB.color.get(familia) || 0), 0)
-  // Da más peso al color; la composición visual ayuda a ordenar candidatas parecidas.
-  return similitudHash * 0.55 + similitudColor * 0.45
-}
-
 const guias = {
   tallas: {
     etiqueta: 'AJUSTE Y MEDIDAS',
@@ -339,14 +73,6 @@ function Catalog() {
   const [colorElegido, setColorElegido] = useState(catalogoInicial.colorElegido || '')
   const [tallaElegida, setTallaElegida] = useState(catalogoInicial.tallaElegida || '')
   const [estiloViseraElegido, setEstiloViseraElegido] = useState(catalogoInicial.estiloViseraElegido || '')
-  const [coincidenciasImagen, setCoincidenciasImagen] = useState(catalogoInicial.coincidenciasImagen ?? null)
-  const [colorBusquedaImagen, setColorBusquedaImagen] = useState(catalogoInicial.colorBusquedaImagen || '')
-  const [imagenVistaPrevia, setImagenVistaPrevia] = useState('')
-  const [errorBusquedaImagen, setErrorBusquedaImagen] = useState('')
-  const [analizandoImagen, setAnalizandoImagen] = useState(false)
-  const imagenVistaPreviaUrl = useRef('')
-  const solicitudImagenRef = useRef(0)
-  const firmasCatalogoRef = useRef(new Map())
   const [guiaAbierta, setGuiaAbierta] = useState(null)
 
   useEffect(() => {
@@ -361,10 +87,6 @@ function Catalog() {
         // Si todavía no se ejecutó el SQL de configuración, el catálogo conserva su vista de ejemplo.
       })
     return () => { activo = false }
-  }, [])
-
-  useEffect(() => () => {
-    if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
   }, [])
 
   const productosColeccion = useMemo(
@@ -413,18 +135,16 @@ function Catalog() {
     const textoProducto = normalizarTextoCatalogo(`${producto.nombre} ${producto.color} ${producto.ciudad}`)
     const familiaProducto = familiaDeColor(producto.color)
     const coincideBusqueda = textoProducto.includes(termino) || (familiaBusqueda && familiaProducto?.clave === familiaBusqueda.clave)
-    const coincideImagen = coincidenciasImagen === null || coincidenciasImagen.includes(producto.id)
     const coincideColor = !colorElegido || (colorElegido.startsWith('familia:')
       ? familiaProducto?.clave === colorElegido.slice('familia:'.length)
       : normalizarTextoCatalogo(producto.color) === colorElegido.slice('color:'.length))
     const coincideTalla = !tallaElegida || producto.talla === tallaElegida
     const coincideVisera = !estiloViseraElegido || producto.estiloVisera === estiloViseraElegido
 
-    return tipoEstaVisible && coincideEstado && coincideBusqueda && coincideImagen && coincideColor && coincideTalla && coincideVisera
+    return tipoEstaVisible && coincideEstado && coincideBusqueda && coincideColor && coincideTalla && coincideVisera
   })
 
   function seleccionarTodas() {
-    quitarBusquedaImagen()
     setModoVista('todas')
     setColeccionElegida('')
     setEstadoElegido('Todos')
@@ -435,7 +155,6 @@ function Catalog() {
   }
 
   function seleccionarAccesorios() {
-    quitarBusquedaImagen()
     setModoVista('accesorios')
     setColeccionElegida('')
     setEstadoElegido('Todos')
@@ -446,7 +165,6 @@ function Catalog() {
   }
 
   function seleccionarEquipo(codigo) {
-    quitarBusquedaImagen()
     setModoVista('equipos')
     setColeccionElegida(codigo)
     setEstadoElegido('Todos')
@@ -457,7 +175,6 @@ function Catalog() {
   }
 
   function volverASeleccion() {
-    quitarBusquedaImagen()
     const volverAEquipos = modoVista === 'equipos'
     setModoVista('')
     setColeccionElegida('')
@@ -475,91 +192,6 @@ function Catalog() {
     setColorElegido('')
     setTallaElegida('')
     setEstiloViseraElegido('')
-    quitarBusquedaImagen()
-  }
-
-  async function buscarPorImagen(archivo) {
-    if (!archivo) return
-    quitarBusquedaImagen()
-    if (!archivo.type.startsWith('image/')) {
-      setErrorBusquedaImagen('Elige una imagen en formato JPG, PNG o WebP.')
-      return
-    }
-    if (archivo.size > 10 * 1024 * 1024) {
-      setErrorBusquedaImagen('La imagen debe pesar menos de 10 MB.')
-      return
-    }
-
-    const vistaPrevia = URL.createObjectURL(archivo)
-    if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
-    imagenVistaPreviaUrl.current = vistaPrevia
-    setImagenVistaPrevia(vistaPrevia)
-    setBusqueda('')
-    setEstadoElegido('Todos')
-    setColorElegido('')
-    setTallaElegida('')
-    setEstiloViseraElegido('')
-    const solicitudImagen = ++solicitudImagenRef.current
-    setAnalizandoImagen(true)
-    try {
-      const firmaConsulta = await crearFirmaImagen(archivo)
-      if (solicitudImagen !== solicitudImagenRef.current) return
-      setColorBusquedaImagen(firmaConsulta.colorPrincipal)
-      const productosConImagen = productosColeccion.filter((producto) => producto.imagen)
-      const resultados = await Promise.all(productosConImagen.map(async (producto) => {
-        try {
-          let firmaProducto = firmasCatalogoRef.current.get(producto.imagen)
-          if (!firmaProducto) {
-            firmaProducto = crearFirmaImagenRemota(producto.imagen)
-            firmasCatalogoRef.current.set(producto.imagen, firmaProducto)
-          }
-          return { id: producto.id, similitud: similitudVisual(firmaConsulta, await firmaProducto) }
-        } catch {
-          firmasCatalogoRef.current.delete(producto.imagen)
-          return null
-        }
-      }))
-      if (solicitudImagen !== solicitudImagenRef.current) return
-
-      const comparables = resultados.filter(Boolean).sort((a, b) => b.similitud - a.similitud)
-      if (!comparables.length) {
-        setCoincidenciasImagen([])
-        setErrorBusquedaImagen(productosConImagen.length
-          ? 'No pudimos comparar las fotos del catálogo. Revisa tu conexión e inténtalo de nuevo.'
-          : 'No encontramos gorras con foto para comparar en esta selección.')
-        return
-      }
-      const colorDetectado = firmaConsulta.colorPrincipal
-      const comparablesMismoColor = colorDetectado
-        ? comparables.filter((resultado) => {
-            const producto = productosConImagen.find((candidato) => candidato.id === resultado.id)
-            return familiaDeColor(producto?.color || '')?.clave === colorDetectado
-          })
-        : []
-      const candidatos = colorDetectado ? comparablesMismoColor : comparables
-      const mejorSimilitud = candidatos[0]?.similitud || 0
-      // Devuelve solo la mejor opción y exige un parecido mínimo; nunca llena la lista con alternativas débiles.
-      const coincidencias = mejorSimilitud >= 0.64 ? [candidatos[0].id] : []
-      setCoincidenciasImagen(coincidencias)
-      if (!coincidencias.length) setErrorBusquedaImagen('No encontramos una coincidencia suficientemente precisa. Prueba con una foto directa de la gorra, sin marco ni captura de pantalla.')
-    } catch {
-      if (solicitudImagen !== solicitudImagenRef.current) return
-      setCoincidenciasImagen([])
-      setErrorBusquedaImagen('No pudimos leer esa imagen. Prueba con otra foto.')
-    } finally {
-      if (solicitudImagen === solicitudImagenRef.current) setAnalizandoImagen(false)
-    }
-  }
-
-  function quitarBusquedaImagen() {
-    solicitudImagenRef.current += 1
-    setCoincidenciasImagen(null)
-    setColorBusquedaImagen('')
-    setAnalizandoImagen(false)
-    if (imagenVistaPreviaUrl.current) URL.revokeObjectURL(imagenVistaPreviaUrl.current)
-    imagenVistaPreviaUrl.current = ''
-    setImagenVistaPrevia('')
-    setErrorBusquedaImagen('')
   }
 
   const guiaSeleccionada = guiaAbierta ? guias[guiaAbierta] : null
@@ -747,26 +379,10 @@ function Catalog() {
               <input
                 type="search"
                 value={busqueda}
-                onChange={(evento) => {
-                  setBusqueda(evento.target.value)
-                  if (evento.target.value) quitarBusquedaImagen()
-                }}
+                onChange={(evento) => setBusqueda(evento.target.value)}
                 placeholder={modoVista === 'accesorios' ? 'Búsqueda' : 'Buscar por gorra, color o equipo'}
                 aria-label={modoVista === 'accesorios' ? 'Búsqueda de accesorios' : 'Buscar gorras por nombre, color o equipo'}
               />
-              {modoVista !== 'accesorios' && <label className="buscar-imagen-boton" title="Buscar gorra por imagen">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.4-2h7.2l1.4 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-                <span className="sr-only">Buscar por imagen</span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  aria-label="Subir imagen de una gorra para encontrar el mismo modelo"
-                  onChange={(evento) => {
-                    buscarPorImagen(evento.target.files?.[0])
-                    evento.target.value = ''
-                  }}
-                />
-              </label>}
             </div>
             {modoVista !== 'accesorios' && (
               <>
@@ -801,16 +417,6 @@ function Catalog() {
             {productosFiltrados.length} {productosFiltrados.length === 1 ? 'modelo' : 'modelos'}
           </p>
 
-          {(coincidenciasImagen !== null || imagenVistaPrevia || errorBusquedaImagen) && <div className="busqueda-imagen-estado" aria-live="polite">
-            {imagenVistaPrevia && <img src={imagenVistaPrevia} alt="Vista previa de la imagen elegida" />}
-            <p>{errorBusquedaImagen || (analizandoImagen
-              ? `Comparando la foto con ${productosColeccion.filter((producto) => producto.imagen).length} gorras del catálogo…`
-              : coincidenciasImagen?.length
-                ? 'Encontramos la coincidencia más cercana. Verifica el color y el bordado del frente.'
-                : 'La foto se compara en este dispositivo; no se sube al catálogo.')}</p>
-            <button type="button" onClick={quitarBusquedaImagen} aria-label="Quitar imagen de búsqueda">×</button>
-          </div>}
-
           {productosFiltrados.length ? (
             <div className="productos-grid">
               {productosFiltrados.map((producto) => (
@@ -826,20 +432,14 @@ function Catalog() {
                     colorElegido,
                     tallaElegida,
                     estiloViseraElegido,
-                    coincidenciasImagen,
-                    colorBusquedaImagen,
                   }}
                 />
               ))}
             </div>
           ) : (
             <div className="sin-resultados">
-              <h3>{coincidenciasImagen !== null
-                ? colorBusquedaImagen && !productosColeccion.some((producto) => familiaDeColor(producto.color || '')?.clave === colorBusquedaImagen)
-                  ? `No hay gorras de color ${colorBusquedaImagen} en el catálogo.`
-                  : 'No encontramos esa gorra en el catálogo.'
-                : 'No hay modelos con esta selección.'}</h3>
-              <p>{coincidenciasImagen !== null ? 'Prueba con otra foto clara o explora todos los modelos.' : 'Prueba otra opción o limpia los filtros para ver más productos.'}</p>
+              <h3>No hay modelos con esta selección.</h3>
+              <p>Prueba otra opción o limpia los filtros para ver más productos.</p>
               <button type="button" className="limpiar-filtros" onClick={limpiarFiltros}>Ver todos los modelos</button>
             </div>
           )}
