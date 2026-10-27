@@ -51,3 +51,11 @@ En `/admin/login`, pulsa **¿Olvidaste tu contraseña?**, escribe el correo de l
 Ejecuta una sola vez el archivo database/mrf_maintenance_mode.sql en **Supabase → SQL Editor**. Esto agrega el interruptor a la configuración del catálogo ya existente.
 
 Luego entra a /admin, abre **Opciones para clientes**, activa **Poner la página en mantenimiento** y guarda. Los visitantes de inicio, catálogo y productos verán el logo MRF y el mensaje “Estamos creando cosas nuevas para ti”; la ruta de administración seguirá disponible para que puedas volver y desactivarlo.
+
+## Entornos de QA y producción
+
+- La rama `main` se despliega como producción en `https://mrf-ten.vercel.app` y usa el proyecto Supabase de producción.
+- La rama `qa` se despliega como Preview en Vercel y usa el proyecto Supabase `MRF QA` (`ioxurlzofcnmycfxkxog`). Su URL fija es `https://mrf-git-qa-maospinarojas25-4545.vercel.app`.
+- La base QA empieza vacía a propósito: no copies clientes, usuarios administradores ni productos reales. Crea datos de prueba y una cuenta administradora exclusiva para QA.
+- Los cambios nuevos se prueban primero en `qa`. Cuando estén listos, intégralos en `main` para producción.
+- En Vercel, las variables QA `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` tienen alcance exclusivo a la rama Preview `qa`. Las variables de producción existentes se mantienen en su entorno.
