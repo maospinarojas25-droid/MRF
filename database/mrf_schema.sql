@@ -111,7 +111,7 @@ returns integer
 language plpgsql
 security invoker
 set search_path = ''
-as $
+as $$
 declare
   remaining integer;
 begin
@@ -128,7 +128,7 @@ begin
 
   return remaining;
 end;
-$;
+$$;
 
 revoke all on function public.mrf_decrement_product_stock(uuid) from public;
 grant execute on function public.mrf_decrement_product_stock(uuid) to authenticated;
