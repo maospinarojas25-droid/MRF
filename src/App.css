@@ -930,19 +930,6 @@ button:focus-visible {
   text-decoration: none;
 }
 
-.producto-link:hover .producto-ver-detalles {
-  color: #a64d2e;
-}
-
-.producto-ver-detalles {
-  display: inline-block;
-  margin-top: 15px;
-  color: #292824;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .producto-titulo-link {
   color: inherit;
   text-decoration: none;
@@ -1329,7 +1316,6 @@ button:focus-visible {
 .catalogo-mrf .filtros-catalogo select,
 .catalogo-mrf .limpiar-filtros { font-size:13px; }
 .catalogo-mrf .producto-detalles,
-.catalogo-mrf .producto-ver-detalles { font-size:12px; }
 .catalogo-mrf .producto-etiqueta { font-size:10px; }
 
 @media (max-width:650px) {
@@ -1436,8 +1422,7 @@ body { font-size:16px; }
 .catalogo-mrf .sin-resultados .limpiar-filtros:hover { background:#f26b38; border-color:#f26b38; color:#171715; }
 
 .catalogo-mrf .producto-info h3 { font-size:19px; }
-.catalogo-mrf .producto-detalles,
-.catalogo-mrf .producto-ver-detalles { font-size:14px; }
+.catalogo-mrf .producto-detalles { font-size:14px; }
 .catalogo-mrf .producto-etiqueta { font-size:12px; }
 .catalogo-mrf .producto-whatsapp { font-size:13px; }
 /* Mantiene la gorra completa dentro de la tarjeta, sin recortar la foto */
@@ -1490,7 +1475,7 @@ body { font-size:16px; }
   .catalogo-mrf .sin-resultados p { font-size:15px; }
   .catalogo-mrf .sin-resultados .limpiar-filtros { width:100%; }
   .catalogo-mrf .producto-info h3 { font-size:15px; }
-  .catalogo-mrf .producto-detalles,.catalogo-mrf .producto-ver-detalles { font-size:12px; }
+  .catalogo-mrf .producto-detalles { font-size:12px; }
   .catalogo-mrf .producto-etiqueta { font-size:10px; }
   .catalogo-mrf .producto-whatsapp { font-size:11px; }
   .detalle-volver { font-size:14px; }
@@ -2096,7 +2081,7 @@ body { font-size:16px; }
 .guia-teaser button:hover { transform: translateY(-1px); background: #f26b38; border-color: #f26b38; color: #171715; }
 .guia-teaser button:hover span { color: #171715; }
 .catalogo-mrf .producto-info h3 { color: #171715; font-size: 21px; }
-.catalogo-mrf .producto-detalles, .catalogo-mrf .producto-ver-detalles { color: #38352f; font-size: 15px; }
+.catalogo-mrf .producto-detalles { color: #38352f; font-size: 15px; }
 .catalogo-mrf .producto-etiqueta { font-size: 13px; font-weight: 800; }
 .catalogo-mrf .producto-whatsapp { font-size: 14px; font-weight: 700; }
 .producto-etiqueta-stock { background: #16764a; color: #fff; }
@@ -2110,7 +2095,7 @@ body { font-size:16px; }
   .guia-teaser div > p:last-child { font-size: 14px; }
   .guia-teaser button { font-size: 14px; }
   .catalogo-mrf .producto-info h3 { font-size: 18px; }
-  .catalogo-mrf .producto-detalles, .catalogo-mrf .producto-ver-detalles { font-size: 14px; }
+  .catalogo-mrf .producto-detalles { font-size: 14px; }
   .catalogo-mrf .producto-etiqueta { font-size: 11px; }
   .catalogo-mrf .producto-whatsapp { font-size: 13px; }
 }
@@ -2350,9 +2335,6 @@ body { font-size:16px; }
     overflow: hidden;
     font-size: 11px;
     line-height: 1.35;
-  }
-  .catalogo-mrf .producto-ver-detalles {
-    display: none;
   }
   .catalogo-mrf .producto-contacto {
     padding: 0 10px 10px;

@@ -35,9 +35,6 @@ function ProductCard({ producto, catalogoState }) {
           {producto.estiloVisera && <span>Visera {producto.estiloVisera.toLowerCase()}</span>}
         </div>
         {producto.descripcion && <p className="producto-descripcion">{producto.descripcion}</p>}
-        <Link className="producto-ver-detalles" to={'/producto/' + producto.id} state={estadoDetalle}>
-          Ver detalles ↗︎
-        </Link>
       </div>
 
       <div className="producto-contacto">
