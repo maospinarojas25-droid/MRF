@@ -9,6 +9,21 @@ import { cargarProducto } from '../data/catalogApi'
 function ProductDetailPage() {
   const { id } = useParams()
   const location = useLocation()
+  const catalogoState = location.state?.catalogoState
+  const catalogoStateAlVolver = catalogoState?.modoVista === 'equipos'
+    ? {
+        ...catalogoState,
+        modoVista: '',
+        equiposAbiertos: true,
+        coleccionElegida: '',
+        estadoElegido: 'Todos',
+        busqueda: '',
+        colorElegido: '',
+        tallaElegida: '',
+        estiloViseraElegido: '',
+      }
+    : catalogoState
+  const estadoVolverCatalogo = catalogoStateAlVolver ? { catalogoState: catalogoStateAlVolver } : undefined
   const [productoRemoto, setProductoRemoto] = useState(undefined)
   const [cargandoRemoto, setCargandoRemoto] = useState(true)
   const productoLocal = productosEjemplo.find((item) => item.id === id)
@@ -62,7 +77,9 @@ function ProductDetailPage() {
     <>
       <Header />
       <main className="detalle-producto">
-        <Link className="detalle-volver" to="/gorras">← Volver al catálogo</Link>
+          <Link className="detalle-volver" to="/gorras" state={estadoVolverCatalogo}>
+            {catalogoState?.modoVista === 'equipos' ? '← Volver a elegir equipo' : '← Volver al catálogo'}
+          </Link>
         <div className="detalle-contenido">
           <div className="detalle-foto">
             {producto.imagen ? (

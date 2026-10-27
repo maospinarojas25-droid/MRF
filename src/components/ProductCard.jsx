@@ -1,13 +1,15 @@
 import { Link } from 'react-router'
 import WhatsAppButton from './WhatsAppButton'
 
-function ProductCard({ producto }) {
+function ProductCard({ producto, catalogoState }) {
+  const estadoDetalle = { categoria: producto.categoria, catalogoState }
+
   return (
     <article className="producto-tarjeta">
       <Link
         className="producto-link"
         to={'/producto/' + producto.id}
-        state={{ categoria: producto.categoria }}
+        state={estadoDetalle}
         aria-label={'Ver detalles de ' + producto.nombre}
       >
         <div className="producto-foto">
@@ -29,8 +31,7 @@ function ProductCard({ producto }) {
           {producto.estiloVisera && <span>Visera {producto.estiloVisera.toLowerCase()}</span>}
         </div>
         {producto.descripcion && <p className="producto-descripcion">{producto.descripcion}</p>}
-        <Link className="producto-ver-detalles" to={'/producto/' + producto.id}
-        state={{ categoria: producto.categoria }}>
+        <Link className="producto-ver-detalles" to={'/producto/' + producto.id} state={estadoDetalle}>
           Ver detalles ↗︎
         </Link>
       </div>

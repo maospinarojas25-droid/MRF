@@ -2279,11 +2279,37 @@ body { font-size:16px; }
 
 /* En celular, deja una muestra corta de cada descripción; el detalle conserva el texto completo */
 @media (max-width: 650px) {
+  .catalogo-mrf .producto-info { padding: 9px 10px 7px; }
+  .catalogo-mrf .producto-info h3 { margin-bottom: 6px; font-size: 14px; line-height: 1.2; }
+  .catalogo-mrf .producto-categoria { margin-bottom: 3px; font-size: 8px; }
+  .catalogo-mrf .producto-detalles { gap: 4px 8px; font-size: 11px; line-height: 1.3; }
+  .catalogo-mrf .producto-detalles span:nth-child(n + 2) { display: none; }
   .catalogo-mrf .producto-descripcion {
+    margin: 6px 0 0;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     overflow: hidden;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  .catalogo-mrf .producto-ver-detalles {
+    margin-top: 8px;
+    font-size: 10px;
+  }
+  .catalogo-mrf .producto-contacto {
+    padding: 0 10px 10px;
+  }
+  .catalogo-mrf .producto-whatsapp {
+    min-height: 36px;
+    margin-top: 8px;
+    padding: 8px;
+    font-size: 10px;
+    line-height: 1.25;
+  }
+  .catalogo-mrf .producto-instagram {
+    margin-top: 7px;
+    font-size: 10px;
   }
 }

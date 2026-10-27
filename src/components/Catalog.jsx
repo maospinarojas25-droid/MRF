@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router'
 import { controlCatalogo as ajustesLocales, productosEjemplo } from '../data/products'
 import { cargarCatalogoPublico } from '../data/catalogApi'
 import ProductCard from './ProductCard'
@@ -60,16 +61,18 @@ const guias = {
 }
 
 function Catalog() {
+  const location = useLocation()
+  const catalogoInicial = location.state?.catalogoState || {}
   const [productosCatalogo, setProductosCatalogo] = useState(productosEjemplo)
   const [control, setControl] = useState(ajustesLocales)
-  const [modoVista, setModoVista] = useState('')
-  const [equiposAbiertos, setEquiposAbiertos] = useState(false)
-  const [estiloViseraElegido, setEstiloViseraElegido] = useState('')
-  const [coleccionElegida, setColeccionElegida] = useState('')
-  const [estadoElegido, setEstadoElegido] = useState('Todos')
-  const [busqueda, setBusqueda] = useState('')
-  const [colorElegido, setColorElegido] = useState('')
-  const [tallaElegida, setTallaElegida] = useState('')
+  const [modoVista, setModoVista] = useState(catalogoInicial.modoVista || '')
+  const [equiposAbiertos, setEquiposAbiertos] = useState(Boolean(catalogoInicial.equiposAbiertos))
+  const [coleccionElegida, setColeccionElegida] = useState(catalogoInicial.coleccionElegida || '')
+  const [estadoElegido, setEstadoElegido] = useState(catalogoInicial.estadoElegido || 'Todos')
+  const [busqueda, setBusqueda] = useState(catalogoInicial.busqueda || '')
+  const [colorElegido, setColorElegido] = useState(catalogoInicial.colorElegido || '')
+  const [tallaElegida, setTallaElegida] = useState(catalogoInicial.tallaElegida || '')
+  const [estiloViseraElegido, setEstiloViseraElegido] = useState(catalogoInicial.estiloViseraElegido || '')
   const [guiaAbierta, setGuiaAbierta] = useState(null)
 
   useEffect(() => {
@@ -233,7 +236,6 @@ function Catalog() {
             className={`opcion-principal opcion-equipos ${equiposAbiertos ? 'seleccionada' : ''}`}
             type="button"
             onClick={() => setEquiposAbiertos(true)}
-            onFocus={() => setEquiposAbiertos(true)}
             aria-expanded={equiposAbiertos}
           >
             <span className="opcion-principal-numero">02</span>
@@ -343,13 +345,6 @@ function Catalog() {
             </aside>
           )}
 
-          {(!hayCatalogo || (coleccionElegida && modelosCatalogo.length === 0)) && (
-            <aside className="aviso-inventario aviso-inventario-secundario" aria-live="polite">
-              <span className="aviso-inventario-icono" aria-hidden="true">i</span>
-              <div><strong>{modoVista === 'accesorios' ? 'Por ahora no hay accesorios disponibles en el catálogo.' : control.mensajeSinEncargos}</strong></div>
-            </aside>
-          )}
-
           <aside className="catalogo-aclaracion" aria-label="Tiempos y disponibilidad">
             <span><strong>EN STOCK</strong> · Lo tenemos físicamente.</span>
             <span><strong>CATÁLOGO</strong> · Tiempo estimado de llegada: 2 a 3 semanas.</span>
@@ -422,7 +417,22 @@ function Catalog() {
 
           {productosFiltrados.length ? (
             <div className="productos-grid">
-              {productosFiltrados.map((producto) => <ProductCard key={producto.id} producto={producto} />)}
+              {productosFiltrados.map((producto) => (
+                <ProductCard
+                  key={producto.id}
+                  producto={producto}
+                  catalogoState={{
+                    modoVista,
+                    equiposAbiertos,
+                    coleccionElegida,
+                    estadoElegido,
+                    busqueda,
+                    colorElegido,
+                    tallaElegida,
+                    estiloViseraElegido,
+                  }}
+                />
+              ))}
             </div>
           ) : (
             <div className="sin-resultados">
