@@ -40,7 +40,12 @@ create table if not exists public.mrf_catalog_settings (
 insert into public.mrf_catalog_settings (id) values (true)
 on conflict (id) do nothing;
 
-create or replace function public.mrf_is_admin()
+-- Keep SECURITY DEFINER helpers out of the API-exposed public schema.
+create schema if not exists private;
+revoke all on schema private from public, anon;
+grant usage on schema private to authenticated;
+
+create or replace function private.mrf_is_admin()
 returns boolean
 language sql
 stable
@@ -53,8 +58,8 @@ as $$
   );
 $$;
 
-revoke all on function public.mrf_is_admin() from public;
-grant execute on function public.mrf_is_admin() to authenticated;
+revoke all on function private.mrf_is_admin() from public, anon, authenticated;
+grant execute on function private.mrf_is_admin() to authenticated;
 
 alter table public.mrf_admin_users enable row level security;
 alter table public.mrf_products enable row level security;
@@ -73,23 +78,23 @@ create policy "Public can read published MRF products"
 drop policy if exists "MRF admins can read all products" on public.mrf_products;
 create policy "MRF admins can read all products"
   on public.mrf_products for select to authenticated
-  using ((select public.mrf_is_admin()));
+  using ((select private.mrf_is_admin()));
 
 drop policy if exists "MRF admins can add products" on public.mrf_products;
 create policy "MRF admins can add products"
   on public.mrf_products for insert to authenticated
-  with check ((select public.mrf_is_admin()));
+  with check ((select private.mrf_is_admin()));
 
 drop policy if exists "MRF admins can update products" on public.mrf_products;
 create policy "MRF admins can update products"
   on public.mrf_products for update to authenticated
-  using ((select public.mrf_is_admin()))
-  with check ((select public.mrf_is_admin()));
+  using ((select private.mrf_is_admin()))
+  with check ((select private.mrf_is_admin()));
 
 drop policy if exists "MRF admins can delete products" on public.mrf_products;
 create policy "MRF admins can delete products"
   on public.mrf_products for delete to authenticated
-  using ((select public.mrf_is_admin()));
+  using ((select private.mrf_is_admin()));
 
 drop policy if exists "Public can read MRF catalog settings" on public.mrf_catalog_settings;
 create policy "Public can read MRF catalog settings"
@@ -99,8 +104,11 @@ create policy "Public can read MRF catalog settings"
 drop policy if exists "MRF admins can update catalog settings" on public.mrf_catalog_settings;
 create policy "MRF admins can update catalog settings"
   on public.mrf_catalog_settings for update to authenticated
-  using ((select public.mrf_is_admin()))
-  with check ((select public.mrf_is_admin()));
+  using ((select private.mrf_is_admin()))
+  with check ((select private.mrf_is_admin()));
+
+-- Remove the old public RPC helper once the policies no longer depend on it.
+drop function if exists public.mrf_is_admin();
 
 grant select on public.mrf_admin_users to authenticated;
 grant select on public.mrf_products to anon, authenticated;
@@ -151,16 +159,16 @@ create policy "Public can view MRF product images"
 drop policy if exists "MRF admins can upload product images" on storage.objects;
 create policy "MRF admins can upload product images"
   on storage.objects for insert to authenticated
-  with check (bucket_id = 'mrf-products' and (select public.mrf_is_admin()));
+  with check (bucket_id = 'mrf-products' and (select private.mrf_is_admin()));
 
 drop policy if exists "MRF admins can update product images" on storage.objects;
 create policy "MRF admins can update product images"
   on storage.objects for update to authenticated
-  using (bucket_id = 'mrf-products' and (select public.mrf_is_admin()))
-  with check (bucket_id = 'mrf-products' and (select public.mrf_is_admin()));
+  using (bucket_id = 'mrf-products' and (select private.mrf_is_admin()))
+  with check (bucket_id = 'mrf-products' and (select private.mrf_is_admin()));
 
 drop policy if exists "MRF admins can delete product images" on storage.objects;
 create policy "MRF admins can delete product images"
   on storage.objects for delete to authenticated
-  using (bucket_id = 'mrf-products' and (select public.mrf_is_admin()));
+  using (bucket_id = 'mrf-products' and (select private.mrf_is_admin()));
 
