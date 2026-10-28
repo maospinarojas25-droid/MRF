@@ -54,7 +54,7 @@ const guias = {
     etiqueta: 'DETALLES DEL PRODUCTO',
     titulo: 'Partes de la gorra',
     texto: 'Conoce los detalles de nuestra gorra negra MRF con visera plana.',
-    imagen: '/guias/visera-plana.png',
+    imagen: '/guias/conoce-la-gorra.png',
     alt: 'Guía de la gorra negra MRF con visera plana',
     whatsapp: true,
   },
