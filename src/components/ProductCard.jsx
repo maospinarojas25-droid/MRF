@@ -1,15 +1,36 @@
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import WhatsAppButton from './WhatsAppButton'
 
 function ProductCard({ producto, catalogoState }) {
-  const estadoDetalle = { categoria: producto.categoria, catalogoState }
+  const navigate = useNavigate()
+  const rutaDetalle = '/producto/' + producto.id
+
+  function abrirDetalle(evento) {
+    if (evento.button !== 0 || evento.metaKey || evento.ctrlKey || evento.shiftKey || evento.altKey) return
+
+    evento.preventDefault()
+    const tarjeta = evento.currentTarget.closest('.producto-tarjeta')
+    navigate(rutaDetalle, {
+      state: {
+        categoria: producto.categoria,
+        catalogoState: {
+          ...catalogoState,
+          returnPosition: {
+            productId: producto.id,
+            cardTop: tarjeta?.getBoundingClientRect().top ?? 0,
+            scrollY: window.scrollY,
+          },
+        },
+      },
+    })
+  }
 
   return (
-    <article className="producto-tarjeta">
+    <article className="producto-tarjeta" data-product-id={producto.id}>
       <Link
         className="producto-link"
-        to={'/producto/' + producto.id}
-        state={estadoDetalle}
+        to={rutaDetalle}
+        onClick={abrirDetalle}
         aria-label={'Ver detalles de ' + producto.nombre}
       >
         <div className="producto-foto">
@@ -25,7 +46,7 @@ function ProductCard({ producto, catalogoState }) {
       <div className="producto-info">
         {producto.categoria === 'Accesorio' && <span className="producto-categoria">ACCESORIO</span>}
         <h3>
-          <Link className="producto-titulo-link" to={'/producto/' + producto.id} state={estadoDetalle}>
+          <Link className="producto-titulo-link" to={rutaDetalle} onClick={abrirDetalle}>
             {producto.nombre}
           </Link>
         </h3>

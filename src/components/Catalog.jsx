@@ -63,6 +63,7 @@ const guias = {
 function Catalog() {
   const location = useLocation()
   const catalogoInicial = location.state?.catalogoState || {}
+  const posicionRetorno = location.state?.catalogoState?.returnPosition
   const [productosCatalogo, setProductosCatalogo] = useState(productosEjemplo)
   const [control, setControl] = useState(ajustesLocales)
   const [modoVista, setModoVista] = useState(catalogoInicial.modoVista || '')
@@ -88,6 +89,33 @@ function Catalog() {
       })
     return () => { activo = false }
   }, [])
+
+  useEffect(() => {
+    const posicion = posicionRetorno
+    if (!posicion) return undefined
+
+    let segundoFrame = 0
+    const primerFrame = requestAnimationFrame(() => {
+      segundoFrame = requestAnimationFrame(() => {
+        const tarjeta = [...document.querySelectorAll('.producto-tarjeta')]
+          .find((elemento) => elemento.dataset.productId === posicion.productId)
+
+        if (tarjeta) {
+          window.scrollTo({
+            top: window.scrollY + tarjeta.getBoundingClientRect().top - posicion.cardTop,
+            behavior: 'auto',
+          })
+        } else {
+          window.scrollTo({ top: posicion.scrollY, behavior: 'auto' })
+        }
+      })
+    })
+
+    return () => {
+      cancelAnimationFrame(primerFrame)
+      cancelAnimationFrame(segundoFrame)
+    }
+  }, [location.key, productosCatalogo, posicionRetorno])
 
   const productosColeccion = useMemo(
     () => productosCatalogo.filter((producto) => {
