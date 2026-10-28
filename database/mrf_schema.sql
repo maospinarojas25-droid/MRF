@@ -110,6 +110,10 @@ create policy "MRF admins can update catalog settings"
 -- Remove the old public RPC helper once the policies no longer depend on it.
 drop function if exists public.mrf_is_admin();
 
+-- Remove broad default/API grants, then restore only what each role needs.
+revoke all on public.mrf_admin_users, public.mrf_products, public.mrf_catalog_settings
+  from anon, authenticated;
+
 grant select on public.mrf_admin_users to authenticated;
 grant select on public.mrf_products to anon, authenticated;
 grant insert, update, delete on public.mrf_products to authenticated;
@@ -140,7 +144,6 @@ $;
 
 revoke all on function public.mrf_decrement_product_stock(uuid) from public;
 grant execute on function public.mrf_decrement_product_stock(uuid) to authenticated;
-grant select on public.mrf_catalog_settings to anon, authenticated;
 grant update on public.mrf_catalog_settings to authenticated;
 
 -- Public viewing of images is intentional. Only authorized MRF admins can upload/remove them.
