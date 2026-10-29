@@ -164,6 +164,31 @@
 
 .admin-switch-mantenimiento { border-color:#754333; background:#291e19; }
 
+.admin-buscador-caracteristicas > .admin-ayuda { margin: -8px 0 16px; }
+.admin-buscador-caracteristicas-filtros { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.admin-buscador-caracteristicas-filtros label { display:flex; flex-direction:column; gap:7px; color:#ded9cf; font-size:12px; }
+.admin-buscador-caracteristicas-filtros select { width:100%; min-width:0; min-height:42px; padding:0 11px; border:1px solid #555149; border-radius:5px; outline:none; background:#171715; color:#f4f0e8; font:inherit; font-size:12px; }
+.admin-buscador-caracteristicas-filtros select:focus { border-color:#f26b38; }
+.admin-buscador-caracteristicas-conteo { margin:14px 0 8px; color:#a7a197; font-size:11px; }
+.admin-resultados-caracteristicas { display:flex; flex-direction:column; gap:7px; max-height:390px; overflow:auto; }
+.admin-resultado-caracteristica { display:grid; grid-template-columns:58px minmax(0,1fr) auto; align-items:center; gap:12px; min-width:0; padding:7px 10px; border:1px solid #393833; border-radius:7px; background:#191917; }
+.admin-resultado-caracteristica-imagen { width:58px; height:58px; display:grid; place-items:center; overflow:hidden; border-radius:5px; background:#eeeae2; color:#57534c; font-size:9px; }
+.admin-resultado-caracteristica-imagen img { width:100%; height:100%; object-fit:contain; padding:3px; }
+.admin-resultado-caracteristica-datos { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.admin-resultado-caracteristica-datos strong { overflow:hidden; color:#f4f0e8; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+.admin-resultado-caracteristica-datos span { overflow:hidden; color:#a7a197; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+.admin-resultado-stock,.admin-resultado-estado { max-width:180px; color:#7ce3aa; font-size:11px; text-align:right; }
+.admin-resultado-estado { color:#c7c2b7; }
+.admin-buscador-sin-resultados { margin-top:8px; border-radius:7px; }
+@media (max-width:850px) { .admin-buscador-caracteristicas-filtros { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:580px) {
+  .admin-buscador-caracteristicas-filtros { gap:9px; }
+  .admin-resultado-caracteristica { grid-template-columns:48px minmax(0,1fr); gap:8px; padding:7px; }
+  .admin-resultado-caracteristica-imagen { width:48px; height:48px; grid-row:1; }
+  .admin-resultado-caracteristica-datos { grid-column:2; }
+  .admin-resultado-stock,.admin-resultado-estado { grid-column:2; max-width:none; text-align:left; }
+}
+
 
 /* Vista simultánea del panel y la tienda pública. */
 .admin-vista-simultanea {
