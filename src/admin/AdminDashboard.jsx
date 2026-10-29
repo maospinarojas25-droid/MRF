@@ -28,6 +28,22 @@ const productoVacio = {
   _imagePath: '',
 }
 
+const filtrosBusquedaVacios = {
+  equipo: '',
+  color: '',
+  visera: '',
+  disponibilidad: '',
+}
+
+function normalizarBusqueda(valor = '') {
+  return String(valor).toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+}
+
+function opcionesDeProductos(lista, campo) {
+  return [...new Set(lista.map((producto) => producto[campo]?.trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
+}
+
 function AdminDashboard() {
   const navigate = useNavigate()
   const [productos, setProductos] = useState([])
@@ -45,7 +61,20 @@ function AdminDashboard() {
   const [error, setError] = useState('')
   const [versionVista, setVersionVista] = useState(0)
   const [productosOcultos, setProductosOcultos] = useState(false)
+  const [filtrosBusqueda, setFiltrosBusqueda] = useState(filtrosBusquedaVacios)
   const consultaNormalizada = busquedaProductos.trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const productosGorra = productos.filter((producto) => producto.categoria !== 'Accesorio')
+  const productosEncontrados = productosGorra.filter((producto) => {
+    const equipoCoincide = !filtrosBusqueda.equipo || normalizarBusqueda(producto.ciudad) === normalizarBusqueda(filtrosBusqueda.equipo)
+    const colorCoincide = !filtrosBusqueda.color || normalizarBusqueda(producto.color) === normalizarBusqueda(filtrosBusqueda.color)
+    const viseraCoincide = !filtrosBusqueda.visera || normalizarBusqueda(producto.estiloVisera) === normalizarBusqueda(filtrosBusqueda.visera)
+    const disponibilidadCoincide = !filtrosBusqueda.disponibilidad || (
+      filtrosBusqueda.disponibilidad === 'Catalogo'
+        ? producto.tipo === 'Catálogo'
+        : producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0
+    )
+    return equipoCoincide && colorCoincide && viseraCoincide && disponibilidadCoincide
+  })
   const productosFiltrados = productos.filter((producto) => {
     const coincideTipo = filtroTipoProductos === 'Todos' || producto.tipo === filtroTipoProductos
     const textoProducto = `${producto.nombre} ${producto.ciudad} ${producto.color} ${producto.tipo} ${producto.categoria}`.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -213,6 +242,58 @@ function AdminDashboard() {
       </section>
 
       {(mensaje || error) && <div className={error ? 'admin-mensaje admin-mensaje-error' : 'admin-mensaje admin-mensaje-ok'} role="status">{error || mensaje}</div>}
+
+      <section className="admin-seccion admin-buscador-caracteristicas" aria-labelledby="admin-buscador-titulo">
+        <div className="admin-seccion-titulo">
+          <div><p className="admin-etiqueta">BUSCAR SIN RECORDAR EL NOMBRE</p><h2 id="admin-buscador-titulo">Encuentra una gorra</h2></div>
+          <button type="button" className="admin-boton-secundario admin-boton-compacto" onClick={() => setFiltrosBusqueda({ ...filtrosBusquedaVacios })}>Limpiar filtros</button>
+        </div>
+        <p className="admin-ayuda">Filtra por equipo o logo, color y visera. Verás si ya está registrada y cuántas unidades hay.</p>
+        <div className="admin-buscador-caracteristicas-filtros">
+          <label>Equipo o logo
+            <select value={filtrosBusqueda.equipo} onChange={(evento) => setFiltrosBusqueda((actual) => ({ ...actual, equipo: evento.target.value }))}>
+              <option value="">Todos los equipos</option>
+              {opcionesDeProductos(productosGorra, 'ciudad').map((equipo) => <option key={equipo} value={equipo}>{equipo}</option>)}
+            </select>
+          </label>
+          <label>Color
+            <select value={filtrosBusqueda.color} onChange={(evento) => setFiltrosBusqueda((actual) => ({ ...actual, color: evento.target.value }))}>
+              <option value="">Todos los colores</option>
+              {opcionesDeProductos(productosGorra, 'color').map((color) => <option key={color} value={color}>{color}</option>)}
+            </select>
+          </label>
+          <label>Visera
+            <select value={filtrosBusqueda.visera} onChange={(evento) => setFiltrosBusqueda((actual) => ({ ...actual, visera: evento.target.value }))}>
+              <option value="">Plana o curva</option>
+              {opcionesDeProductos(productosGorra, 'estiloVisera').map((visera) => <option key={visera} value={visera}>{visera}</option>)}
+            </select>
+          </label>
+          <label>Disponibilidad
+            <select value={filtrosBusqueda.disponibilidad} onChange={(evento) => setFiltrosBusqueda((actual) => ({ ...actual, disponibilidad: evento.target.value }))}>
+              <option value="">Todas</option>
+              <option value="Inventario">En inventario</option>
+              <option value="Catalogo">Pedido bajo encargo</option>
+            </select>
+          </label>
+        </div>
+        <p className="admin-buscador-caracteristicas-conteo" aria-live="polite">{productosEncontrados.length} {productosEncontrados.length === 1 ? 'gorra encontrada' : 'gorras encontradas'}</p>
+        {productosEncontrados.length ? (
+          <div className="admin-resultados-caracteristicas">
+            {productosEncontrados.map((producto) => (
+              <article className="admin-resultado-caracteristica" key={producto.id}>
+                <div className="admin-resultado-caracteristica-imagen">{producto.imagen ? <img src={producto.imagen} alt={`Foto: ${producto.nombre}`} /> : <span>Sin foto</span>}</div>
+                <div className="admin-resultado-caracteristica-datos">
+                  <strong>{producto.nombre}</strong>
+                  <span>{[producto.ciudad, producto.color, producto.estiloVisera].filter(Boolean).join(' · ') || 'Sin características registradas'}</span>
+                </div>
+                <strong className={producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0 ? 'admin-resultado-stock' : 'admin-resultado-estado'}>
+                  {producto.tipo === 'Catálogo' ? 'Pedido bajo encargo' : Number(producto.stockQuantity) > 0 ? `${producto.stockQuantity} en inventario` : 'Agotada'}
+                </strong>
+              </article>
+            ))}
+          </div>
+        ) : <div className="admin-vacio admin-buscador-sin-resultados"><strong>No encontramos gorras con esos filtros.</strong><span>Prueba quitando una característica o revisa si la gorra aún no está registrada.</span></div>}
+      </section>
 
       <section className="admin-seccion admin-inventario">
         <div className="admin-seccion-titulo">
