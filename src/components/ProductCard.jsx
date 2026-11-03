@@ -25,6 +25,10 @@ function ProductCard({ producto, catalogoState }) {
     })
   }
 
+  const etiquetaEstado = producto.tipo === 'Disponible'
+    ? Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada'
+    : producto.tipo === 'Próxima a llegar' ? 'Próxima a llegar' : 'Catálogo'
+
   return (
     <article className="producto-tarjeta" data-product-id={producto.id}>
       <Link
@@ -39,7 +43,7 @@ function ProductCard({ producto, catalogoState }) {
           ) : (
             <span>FOTO DEL PRODUCTO<br />PENDIENTE</span>
           )}
-          <span className={producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'producto-etiqueta producto-etiqueta-stock' : 'producto-etiqueta producto-etiqueta-agotada') : 'producto-etiqueta'}>{producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : 'Catálogo'}</span>
+          <span className={producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'producto-etiqueta producto-etiqueta-stock' : 'producto-etiqueta producto-etiqueta-agotada') : 'producto-etiqueta'}>{etiquetaEstado}</span>
         </div>
       </Link>
 
@@ -60,13 +64,13 @@ function ProductCard({ producto, catalogoState }) {
 
       <div className="producto-contacto">
         {producto.categoria === 'Accesorio' ? (
-          <a className="producto-whatsapp" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
+          <a className="producto-whatsapp" href="https://ig.me/m/mrf_dept" target="_blank" rel="noopener noreferrer">
             Consultar por Instagram <span aria-hidden="true">↗︎</span>
           </a>
         ) : (
           <>
             <WhatsAppButton producto={producto} />
-            <a className="producto-instagram" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
+            <a className="producto-instagram" href="https://ig.me/m/mrf_dept" target="_blank" rel="noopener noreferrer">
               Consultar por Instagram <span aria-hidden="true">↗︎</span>
             </a>
           </>

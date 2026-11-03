@@ -14,7 +14,7 @@ create table if not exists public.mrf_products (
   color text not null default '',
   size text not null default '',
   availability text not null default 'made_to_order'
-    check (availability in ('available', 'made_to_order')),
+    check (availability in ('available', 'made_to_order', 'coming_soon')),
   is_published boolean not null default true,
   image_path text,
   stock_quantity integer not null default 1 check (stock_quantity >= 0),

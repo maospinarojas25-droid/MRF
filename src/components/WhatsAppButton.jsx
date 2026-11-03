@@ -2,10 +2,11 @@ const numeroWhatsApp = '573224228633'
 
 function WhatsAppButton({ producto }) {
   const agotada = producto.tipo === 'Disponible' && Number(producto.stockQuantity) <= 0
-  const modalidad = producto.tipo === 'Disponible' ? 'en stock en físico' : 'del catálogo'
-  const mensaje = agotada
-    ? 'Hola, estoy interesado/a en ' + producto.nombre + ', que aparece sin unidades. ¿Saben cuándo volverá a estar disponible?'
-    : 'Hola, estoy interesado/a en ' + producto.nombre + ' (' + modalidad + '). ¿Me pueden dar información?'
+  const estado = agotada ? 'Agotada' : producto.tipo === 'Disponible' ? 'En stock' : producto.tipo
+  const detalles = [producto.nombre, producto.color && `color ${producto.color}`, `estado: ${estado}`]
+    .filter(Boolean)
+    .join(' · ')
+  const mensaje = `Hola, quisiera más información sobre esta gorra: ${detalles}. ¿Me pueden ayudar?`
 
   const enlace = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`
 

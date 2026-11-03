@@ -40,7 +40,7 @@ function ProductDetailPage() {
   const producto = productoRemoto || productoLocal
   const estadoStock = producto?.tipo === 'Disponible'
     ? Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada'
-    : 'Catálogo'
+    : producto?.tipo === 'Próxima a llegar' ? 'Próxima a llegar' : 'Catálogo'
 
   if (!producto && cargandoRemoto) {
     return <main className="detalle-no-encontrado"><p>{textoCarga}</p></main>
@@ -93,7 +93,9 @@ function ProductDetailPage() {
             <p className={producto.tipo === 'Disponible' ? 'detalle-aviso-stock' : 'detalle-aviso-catalogo'}>
               {producto.tipo === 'Disponible'
                 ? (Number(producto.stockQuantity) > 0 ? 'En stock: disponible físicamente en Colombia.' : 'Agotada por ahora. Escríbenos para consultar próximas unidades.')
-                : 'Modelo por catálogo. Tiempo estimado de llegada: 2 a 3 semanas.'}
+                : producto.tipo === 'Próxima a llegar'
+                  ? 'Próxima a llegar. Escríbenos para confirmar cuándo estará disponible.'
+                  : 'Modelo por catálogo. Tiempo estimado de llegada: 2 a 3 semanas.'}
             </p>
             {producto.categoria !== 'Accesorio' && (
               <button type="button" className="detalle-guia-tallas" onClick={() => setGuiaTallasAbierta(true)}>
@@ -106,7 +108,7 @@ function ProductDetailPage() {
               </ul>
             )}
             <WhatsAppButton producto={producto} />
-            <a className="detalle-instagram" href="https://www.instagram.com/mrf_dept/" target="_blank" rel="noopener noreferrer">
+            <a className="detalle-instagram" href="https://ig.me/m/mrf_dept" target="_blank" rel="noopener noreferrer">
               Consultar por Instagram <span aria-hidden="true">↗︎</span>
             </a>
           </section>

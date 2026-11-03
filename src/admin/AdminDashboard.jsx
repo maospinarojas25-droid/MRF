@@ -59,7 +59,6 @@ function AdminDashboard() {
   const [guardandoAjustes, setGuardandoAjustes] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
-  const [versionVista, setVersionVista] = useState(0)
   const [productosOcultos, setProductosOcultos] = useState(false)
   const [filtrosBusqueda, setFiltrosBusqueda] = useState(filtrosBusquedaVacios)
   const consultaNormalizada = busquedaProductos.trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -71,7 +70,9 @@ function AdminDashboard() {
     const disponibilidadCoincide = !filtrosBusqueda.disponibilidad || (
       filtrosBusqueda.disponibilidad === 'Catalogo'
         ? producto.tipo === 'Catálogo'
-        : producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0
+        : filtrosBusqueda.disponibilidad === 'Proxima'
+          ? producto.tipo === 'Próxima a llegar'
+          : producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0
     )
     return equipoCoincide && colorCoincide && viseraCoincide && disponibilidadCoincide
   })
@@ -104,6 +105,7 @@ function AdminDashboard() {
       const fieldValue = type === 'checkbox' ? checked : type === 'number' ? (value === '' ? '' : Number(value)) : value
       const actualizado = { ...actual, [name]: fieldValue }
       if (name === 'tipo' && value === 'Catálogo') actualizado.talla = ''
+      if (name === 'tipo' && value !== 'Disponible') actualizado.stockQuantity = 0
       if (name === 'tipo' && value === 'Disponible' && actual.categoria !== 'Accesorio') {
         if (!actual.talla) actualizado.talla = 'Ajustable'
         if (Number(actual.stockQuantity) < 1) actualizado.stockQuantity = 1
@@ -169,7 +171,6 @@ function AdminDashboard() {
       let imagePath = formulario._imagePath
       if (archivo) imagePath = await cargarImagen(archivo)
       await guardarProducto({ ...formulario, _imagePath: imagePath })
-      setVersionVista((version) => version + 1)
       setMensaje(formulario.id ? 'Cambios guardados.' : 'Producto agregado al catálogo.')
       setFormulario(productoVacio)
       setArchivo(null)
@@ -202,7 +203,6 @@ function AdminDashboard() {
     setMensaje('')
     try {
       await guardarAjustes(ajustes)
-      setVersionVista((version) => version + 1)
       setMensaje('Cambios guardados para el catálogo público.')
     } catch {
       setError('No se pudieron guardar las opciones del catálogo.')
@@ -228,11 +228,10 @@ function AdminDashboard() {
 
       <aside className="admin-vista-simultanea" aria-label="Vista previa de la tienda">
         <div className="admin-vista-simultanea-barra">
-          <div><p className="admin-etiqueta">VISTA PÚBLICA</p><h2>Así se ve tu página</h2></div>
-          <button type="button" className="admin-boton-principal admin-boton-compacto" onClick={() => setVersionVista((version) => version + 1)}>Actualizar</button>
+          <div><p className="admin-etiqueta">VISTA PÚBLICA</p><h2>Revisa la tienda mientras editas</h2></div>
+          <a className="admin-boton-principal admin-boton-compacto admin-abrir-tienda" href="/" target="_blank" rel="noopener noreferrer">Abrir tienda ↗</a>
         </div>
-        <iframe key={versionVista} src="/" title="Vista previa de la página pública de MRF" />
-        <p className="admin-vista-simultanea-ayuda">Al guardar cambios, la vista se actualizará. También puedes pulsar “Actualizar”.</p>
+        <p className="admin-vista-simultanea-ayuda">La tienda se abre en otra pestaña. Después de guardar aquí, actualiza esa pestaña para ver los cambios.</p>
       </aside>
 
       <section className="admin-cabecera">
@@ -271,7 +270,8 @@ function AdminDashboard() {
           <label>Disponibilidad
             <select value={filtrosBusqueda.disponibilidad} onChange={(evento) => setFiltrosBusqueda((actual) => ({ ...actual, disponibilidad: evento.target.value }))}>
               <option value="">Todas</option>
-              <option value="Inventario">En inventario</option>
+              <option value="Inventario">En stock</option>
+              <option value="Proxima">Próxima a llegar</option>
               <option value="Catalogo">Pedido bajo encargo</option>
             </select>
           </label>
@@ -287,7 +287,7 @@ function AdminDashboard() {
                   <span>{[producto.ciudad, producto.color, producto.estiloVisera].filter(Boolean).join(' · ') || 'Sin características registradas'}</span>
                 </div>
                 <strong className={producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0 ? 'admin-resultado-stock' : 'admin-resultado-estado'}>
-                  {producto.tipo === 'Catálogo' ? 'Pedido bajo encargo' : Number(producto.stockQuantity) > 0 ? `${producto.stockQuantity} en inventario` : 'Agotada'}
+                  {producto.tipo === 'Catálogo' ? 'Pedido bajo encargo' : producto.tipo === 'Próxima a llegar' ? 'Próxima a llegar' : Number(producto.stockQuantity) > 0 ? `${producto.stockQuantity} en inventario` : 'Agotada'}
                 </strong>
               </article>
             ))}
@@ -316,7 +316,8 @@ function AdminDashboard() {
               />
               <select value={filtroTipoProductos} onChange={(evento) => setFiltroTipoProductos(evento.target.value)} aria-label="Filtrar por tipo de producto">
                 <option value="Todos">Todos los tipos</option>
-                <option value="Disponible">Inventario físico</option>
+                <option value="Disponible">En stock</option>
+                <option value="Próxima a llegar">Próxima a llegar</option>
                 <option value="Catálogo">Pedido bajo encargo</option>
               </select>
               <span>{productosFiltrados.length} de {productos.length} modelos</span>
@@ -330,7 +331,7 @@ function AdminDashboard() {
                       <span className={producto.publicado ? 'admin-etiqueta-estado publicado' : 'admin-etiqueta-estado oculto'}>{producto.publicado ? 'Publicado' : 'Oculto'}</span>
                     </div>
                     <div className="admin-producto-datos">
-                      <p>{producto.categoria === 'Accesorio' ? 'ACCESORIO' : producto.ciudad || 'MRF'} · {producto.tipo}</p>
+                      <p>{producto.categoria === 'Accesorio' ? 'ACCESORIO' : producto.ciudad || 'MRF'} · {producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : producto.tipo}</p>
                       <h3>{producto.nombre}</h3>
                       <span>{producto.color}{producto.tipo === 'Disponible' && producto.talla ? ` · Talla ${producto.talla}` : ''}</span>
                       {producto.tipo === 'Disponible' && <strong className={Number(producto.stockQuantity) > 0 ? 'admin-stock-estado' : 'admin-stock-estado agotada'}>{Number(producto.stockQuantity) > 0 ? producto.stockQuantity + ' en stock' : 'Agotada'}</strong>}
@@ -354,7 +355,7 @@ function AdminDashboard() {
           <h2>{formulario.id ? 'Editar producto' : 'Agregar un producto'}</h2>
           <label>Categoría<select name="categoria" value={formulario.categoria || 'Gorra'} onChange={cambiarCampo}><option value="Gorra">Gorra</option><option value="Accesorio">Accesorio</option></select></label>
           {formulario.categoria !== 'Accesorio' && <label>Estilo de visera<select name="estiloVisera" required value={formulario.estiloVisera || ''} onChange={cambiarCampo}><option value="">Selecciona: plana o curva</option><option value="Plana">Plana</option><option value="Curva">Curva</option></select></label>}
-          <label>Disponibilidad<select name="tipo" value={formulario.tipo} onChange={cambiarCampo}><option value="Disponible">Inventario físico</option><option value="Catálogo">Pedido bajo encargo</option></select></label>
+          <label>Disponibilidad<select name="tipo" value={formulario.tipo} onChange={cambiarCampo}><option value="Disponible">En stock</option><option value="Próxima a llegar">Próxima a llegar</option><option value="Catálogo">Pedido bajo encargo</option></select></label>
           <label>Nombre<input name="nombre" required maxLength="100" value={formulario.nombre} onChange={cambiarCampo} placeholder="MRF LA Classic" /></label>
           <label>Descripción<textarea name="descripcion" rows="3" maxLength="600" value={formulario.descripcion} onChange={cambiarCampo} placeholder="Describe este producto" /></label>
           <div className="admin-campos-dobles">
