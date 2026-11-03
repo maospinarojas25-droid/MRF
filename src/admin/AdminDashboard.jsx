@@ -59,6 +59,7 @@ function AdminDashboard() {
   const [guardandoAjustes, setGuardandoAjustes] = useState(false)
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
+  const [versionVista, setVersionVista] = useState(0)
   const [productosOcultos, setProductosOcultos] = useState(false)
   const [filtrosBusqueda, setFiltrosBusqueda] = useState(filtrosBusquedaVacios)
   const consultaNormalizada = busquedaProductos.trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -171,6 +172,7 @@ function AdminDashboard() {
       let imagePath = formulario._imagePath
       if (archivo) imagePath = await cargarImagen(archivo)
       await guardarProducto({ ...formulario, _imagePath: imagePath })
+      setVersionVista((version) => version + 1)
       setMensaje(formulario.id ? 'Cambios guardados.' : 'Producto agregado al catálogo.')
       setFormulario(productoVacio)
       setArchivo(null)
@@ -203,6 +205,7 @@ function AdminDashboard() {
     setMensaje('')
     try {
       await guardarAjustes(ajustes)
+      setVersionVista((version) => version + 1)
       setMensaje('Cambios guardados para el catálogo público.')
     } catch {
       setError('No se pudieron guardar las opciones del catálogo.')
@@ -228,10 +231,11 @@ function AdminDashboard() {
 
       <aside className="admin-vista-simultanea" aria-label="Vista previa de la tienda">
         <div className="admin-vista-simultanea-barra">
-          <div><p className="admin-etiqueta">VISTA PÚBLICA</p><h2>Revisa la tienda mientras editas</h2></div>
-          <a className="admin-boton-principal admin-boton-compacto admin-abrir-tienda" href="/" target="_blank" rel="noopener noreferrer">Abrir tienda ↗</a>
+          <div><p className="admin-etiqueta">VISTA PÚBLICA</p><h2>Así se ve tu página</h2></div>
+          <button type="button" className="admin-boton-principal admin-boton-compacto" onClick={() => setVersionVista((version) => version + 1)}>Actualizar</button>
         </div>
-        <p className="admin-vista-simultanea-ayuda">La tienda se abre en otra pestaña. Después de guardar aquí, actualiza esa pestaña para ver los cambios.</p>
+        <iframe key={versionVista} src="/" title="Vista previa de la página pública de MRF" loading="eager" />
+        <p className="admin-vista-simultanea-ayuda">Al guardar cambios, esta vista se actualiza. También puedes pulsar “Actualizar”.</p>
       </aside>
 
       <section className="admin-cabecera">
