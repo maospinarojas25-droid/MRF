@@ -5,6 +5,12 @@ ALTER TABLE public.mrf_products
   ADD COLUMN IF NOT EXISTS product_category text NOT NULL DEFAULT 'cap',
   ADD COLUMN IF NOT EXISTS visor_style text;
 
+ALTER TABLE public.mrf_products
+  DROP CONSTRAINT IF EXISTS mrf_products_availability_check;
+ALTER TABLE public.mrf_products
+  ADD CONSTRAINT mrf_products_availability_check
+  CHECK (availability IN ('available', 'made_to_order', 'coming_soon'));
+
 DO $$
 BEGIN
   IF NOT EXISTS (

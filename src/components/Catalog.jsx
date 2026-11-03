@@ -4,7 +4,7 @@ import { controlCatalogo as ajustesLocales, productosEjemplo } from '../data/pro
 import { cargarCatalogoPublico } from '../data/catalogApi'
 import ProductCard from './ProductCard'
 
-const estados = ['Todos', 'En stock', 'Catálogo']
+const estados = ['Todos', 'En stock', 'Próxima a llegar', 'Catálogo']
 const equiposDestacados = [
   { codigo: 'LA', nombre: 'LA', numero: '01' },
   { codigo: 'NY YANKEES', nombre: 'NY Yankees', numero: '02' },
@@ -130,10 +130,12 @@ function Catalog() {
     [productosCatalogo, modoVista, coleccionElegida]
   )
   const disponibles = productosColeccion.filter((producto) => producto.tipo === 'Disponible')
+  const modelosProximos = productosColeccion.filter((producto) => producto.tipo === 'Próxima a llegar')
   const modelosCatalogo = productosColeccion.filter((producto) => producto.tipo === 'Catálogo')
   const enStock = disponibles.filter((producto) => Number(producto.stockQuantity) > 0)
   const hayDisponibles = control.disponiblesHabilitados && enStock.length > 0
   const hayCatalogo = control.encargosHabilitados && modelosCatalogo.length > 0
+  const hayProximos = modelosProximos.length > 0
   const opcionesColor = [...new Map(productosColeccion
     .map((producto) => String(producto.color || '').trim())
     .filter(Boolean)
@@ -159,6 +161,7 @@ function Catalog() {
     const coincideEstado =
       estadoElegido === 'Todos' ||
       (estadoElegido === 'En stock' && producto.tipo === 'Disponible' && Number(producto.stockQuantity) > 0) ||
+      (estadoElegido === 'Próxima a llegar' && producto.tipo === 'Próxima a llegar') ||
       (estadoElegido === 'Catálogo' && producto.tipo === 'Catálogo')
     const textoProducto = normalizarTextoCatalogo(`${producto.nombre} ${producto.color} ${producto.ciudad}`)
     const familiaProducto = familiaDeColor(producto.color)
@@ -375,6 +378,7 @@ function Catalog() {
 
           <aside className="catalogo-aclaracion" aria-label="Tiempos y disponibilidad">
             <span><strong>EN STOCK</strong> · Lo tenemos físicamente.</span>
+            <span><strong>PRÓXIMA A LLEGAR</strong> · Estamos esperando nuevas unidades.</span>
             <span><strong>CATÁLOGO</strong> · Tiempo estimado de llegada: 2 a 3 semanas.</span>
           </aside>
 
@@ -382,10 +386,12 @@ function Catalog() {
             {estados.map((estado) => {
               const deshabilitado =
                 (estado === 'En stock' && !hayDisponibles) ||
-            (estado === 'Catálogo' && !hayCatalogo)
+                (estado === 'Próxima a llegar' && !hayProximos) ||
+                (estado === 'Catálogo' && !hayCatalogo)
               const cantidad = estado === 'En stock'
                 ? enStock.length
-                : estado === 'Catálogo' ? modelosCatalogo.length : productosColeccion.length
+                : estado === 'Próxima a llegar' ? modelosProximos.length
+                  : estado === 'Catálogo' ? modelosCatalogo.length : productosColeccion.length
 
               return (
                 <button

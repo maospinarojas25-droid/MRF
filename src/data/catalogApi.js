@@ -28,7 +28,9 @@ function convertirProducto(fila) {
     color: fila.color || '',
     talla: fila.size || '',
     stockQuantity: Number(fila.stock_quantity ?? 1),
-    tipo: fila.availability === 'available' ? 'Disponible' : 'Catálogo',
+    tipo: fila.availability === 'available'
+      ? 'Disponible'
+      : fila.availability === 'coming_soon' ? 'Próxima a llegar' : 'Catálogo',
     imagen,
     publicado: fila.is_published,
     _imagePath: fila.image_path || '',
@@ -120,7 +122,9 @@ export async function guardarProducto(producto) {
     color: producto.color.trim(),
     size: producto.talla.trim(),
     stock_quantity: producto.tipo === 'Disponible' ? Math.max(0, Math.floor(Number(producto.stockQuantity) || 0)) : 0,
-    availability: producto.tipo === 'Disponible' ? 'available' : 'made_to_order',
+    availability: producto.tipo === 'Disponible'
+      ? 'available'
+      : producto.tipo === 'Próxima a llegar' ? 'coming_soon' : 'made_to_order',
     is_published: producto.publicado,
     image_path: producto._imagePath || null,
   }

@@ -30,6 +30,10 @@ Inicia la página y entra a `http://localhost:5173/admin/login`. Inicia sesión 
 
 Los productos de ejemplo que ya estaban escritos en el código no se copian solos a Supabase. Después de ejecutar el SQL, agrégalos desde el panel. Al guardar, el catálogo público leerá los cambios de la base de datos.
 
+## Estado «Próxima a llegar»
+
+En una base existente, ejecuta una vez `database/mrf_coming_soon.sql` en **SQL Editor**. Después de publicar el cambio de la app, el formulario de productos permitirá elegir **Próxima a llegar** y el estado aparecerá como filtro en la tienda. En una base nueva, `database/mrf_schema.sql` ya incluye ese estado.
+
 ## Seguridad
 
 - No actives un formulario público de registro para administración.
