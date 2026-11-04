@@ -56,7 +56,7 @@ function ProductCard({ producto, catalogoState }) {
         </h3>
         <div className="producto-detalles">
           <span>{producto.color}</span>
-          {producto.tipo === 'Disponible' && producto.talla && <span>Talla {producto.talla}</span>}
+          {['Disponible', 'Próxima a llegar'].includes(producto.tipo) && producto.talla && <span>Talla {producto.talla}</span>}
           {producto.estiloVisera && <span>Visera {producto.estiloVisera.charAt(0).toUpperCase() + producto.estiloVisera.slice(1).toLowerCase()}</span>}
         </div>
         {producto.descripcion && <p className="producto-descripcion">{producto.descripcion}</p>}

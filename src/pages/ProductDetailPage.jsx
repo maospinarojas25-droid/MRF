@@ -87,7 +87,7 @@ function ProductDetailPage() {
             <dl className="detalle-datos">
               <div><dt>Disponibilidad</dt><dd>{estadoStock}</dd></div>
               <div><dt>Color</dt><dd>{producto.color}</dd></div>
-              {producto.tipo === 'Disponible' && producto.talla && <div><dt>Talla</dt><dd>{producto.talla}</dd></div>}
+              {['Disponible', 'Próxima a llegar'].includes(producto.tipo) && producto.talla && <div><dt>Talla</dt><dd>{producto.talla}</dd></div>}
               {producto.estiloVisera && <div><dt>Visera</dt><dd>{producto.estiloVisera.charAt(0).toUpperCase() + producto.estiloVisera.slice(1).toLowerCase()}</dd></div>}
             </dl>
             <p className={producto.tipo === 'Disponible' ? 'detalle-aviso-stock' : 'detalle-aviso-catalogo'}>

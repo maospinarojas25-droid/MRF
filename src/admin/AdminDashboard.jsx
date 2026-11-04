@@ -337,7 +337,7 @@ function AdminDashboard() {
                     <div className="admin-producto-datos">
                       <p>{producto.categoria === 'Accesorio' ? 'ACCESORIO' : producto.ciudad || 'MRF'} · {producto.tipo === 'Disponible' ? (Number(producto.stockQuantity) > 0 ? 'En stock' : 'Agotada') : producto.tipo}</p>
                       <h3>{producto.nombre}</h3>
-                      <span>{producto.color}{producto.tipo === 'Disponible' && producto.talla ? ` · Talla ${producto.talla}` : ''}</span>
+                      <span>{producto.color}{['Disponible', 'Próxima a llegar'].includes(producto.tipo) && producto.talla ? ` · Talla ${producto.talla}` : ''}</span>
                       {producto.tipo === 'Disponible' && <strong className={Number(producto.stockQuantity) > 0 ? 'admin-stock-estado' : 'admin-stock-estado agotada'}>{Number(producto.stockQuantity) > 0 ? producto.stockQuantity + ' en stock' : 'Agotada'}</strong>}
                     </div>
                     <div className="admin-producto-acciones">
@@ -367,10 +367,10 @@ function AdminDashboard() {
             <label>{formulario.categoria === 'Accesorio' ? 'Color (opcional)' : 'Color'}<input name="color" required={formulario.categoria !== 'Accesorio'} maxLength="40" value={formulario.color} onChange={cambiarCampo} placeholder={formulario.categoria === 'Accesorio' ? 'Opcional' : 'Negro'} /></label>
           </div>
           <div className="admin-campos-dobles">
-            {formulario.tipo === 'Disponible' ? (
+            {['Disponible', 'Próxima a llegar'].includes(formulario.tipo) ? (
               <>
-                {formulario.categoria !== 'Accesorio' && <label>Talla<input name="talla" required maxLength="40" value={formulario.talla} onChange={cambiarCampo} placeholder="Ajustable" /></label>}
-                <label>Cantidad en stock<input name="stockQuantity" type="number" min="0" step="1" required value={formulario.stockQuantity} onChange={cambiarCampo} /><small>Al llegar a 0 se mostrará como agotado. Al venderlo, puedes eliminarlo desde el inventario.</small></label>
+                {formulario.categoria !== 'Accesorio' && <label>{formulario.tipo === 'Próxima a llegar' ? 'Talla que llegará (opcional)' : 'Talla'}<input name="talla" required={formulario.tipo === 'Disponible'} maxLength="40" value={formulario.talla} onChange={cambiarCampo} placeholder={formulario.tipo === 'Próxima a llegar' ? 'Ej. 7 1/2 o Ajustable' : 'Ajustable'} />{formulario.tipo === 'Próxima a llegar' && <small>Si aún no la sabes, puedes agregarla después.</small>}</label>}
+                {formulario.tipo === 'Disponible' && <label>Cantidad en stock<input name="stockQuantity" type="number" min="0" step="1" required value={formulario.stockQuantity} onChange={cambiarCampo} /><small>Al llegar a 0 se mostrará como agotado. Al venderlo, puedes eliminarlo desde el inventario.</small></label>}
               </>
             ) : (
               <p className="admin-ayuda admin-talla-no-aplica">{formulario.categoria === 'Accesorio' ? 'Los accesorios por encargo no requieren talla.' : 'Las gorras bajo encargo no llevan talla ni control de stock.'}</p>
