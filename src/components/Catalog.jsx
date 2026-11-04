@@ -147,7 +147,7 @@ function Catalog() {
         : [`color:${normalizado}`, { valor: `color:${normalizado}`, etiqueta: color }]
     }))].map(([, opcion]) => opcion).sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es'))
   const tallas = [...new Map(productosColeccion
-    .filter((producto) => producto.tipo === 'Disponible' && producto.talla)
+    .filter((producto) => ['Disponible', 'Próxima a llegar'].includes(producto.tipo) && producto.talla)
     .map((producto) => String(producto.talla).trim())
     .filter(Boolean)
     .map((talla) => [normalizarTextoCatalogo(talla), talla]))].map(([, talla]) => talla)
